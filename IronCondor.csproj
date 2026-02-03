@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>IronCondor</RootNamespace>
+    <AssemblyName>IronCondor</AssemblyName>
+    <!-- Suppress assembly strong name warnings from multi-targeted dependencies -->
+    <NoWarn>$(NoWarn);MSB3277</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\source\csharpclient\client\CSharpAPI.csproj" />
+  </ItemGroup>
+
+</Project>
+
