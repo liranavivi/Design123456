@@ -1,0 +1,283 @@
+                        ___                           ____                       _
+                       |_ _|  _ __    ___    _ __    / ___|   ___    _ __     __| |   ___    _ __
+                        | |  | '__|  / _ \  | '_ \  | |      / _ \  | '_ \   / _` |  / _ \  | '__|
+                        | |  | |    | (_) | | | | | | |___  | (_) | | | | | | (_| | | (_) | | |
+                       |___| |_|     \___/  |_| |_|  \____|  \___/  |_| |_|  \__,_|  \___/  |_|
+
+────────────────────────────────────────── TWS API .NET 9 Console Application ──────────────────────────────────────────
+
+Symbol to analyze [SPY/QQQ/IWM/AAPL/MSFT/NVDA] (SPY): SPY
+Quantity per order (4): 4
+Place orders? [y/n] (n): n
+
+──────────────────────────────────────────────── Configuration Complete ────────────────────────────────────────────────
+┌──────────────┬───────────────────────────────┐
+│ Setting      │ Value                         │
+├──────────────┼───────────────────────────────┤
+│ Connection   │ TWS Paper Trading (port 4001) │
+│ Symbol       │ SPY                           │
+│ Quantity     │ 4                             │
+│ Place Orders │ No (Dry Run)                  │
+└──────────────┴───────────────────────────────┘
+
+[INFO] Connecting to TWS/Gateway...
+[INFO] Host: 127.0.0.1, Port: 4001, ClientId: 1
+[INFO] Connection acknowledged
+
+- Connecting to 127.0.0.1:4001...
+                                 [INFO] Open Order - OrderId: 2976, Symbol: SPY, Status: PreSubmitted
+[INFO] Order Status - OrderId: 2976, Status: PreSubmitted, Filled: 0, Remaining: 4
+[INFO] Open Order - OrderId: 2978, Symbol: SPY, Status: PreSubmitted
+[INFO] Order Status - OrderId: 2978, Status: PreSubmitted, Filled: 0, Remaining: 4
+[INFO] Open Order - OrderId: 2977, Symbol: SPY, Status: PreSubmitted
+[INFO] Order Status - OrderId: 2977, Status: PreSubmitted, Filled: 0, Remaining: 4
+[INFO] Managed Accounts: DU3972733
+[INFO] Next Valid Order ID: 2979
+[OK] Connected to TWS/Gateway
+
+──────────────────────────────────────────── Iron Condor Strategy Execution ────────────────────────────────────────────
+[INFO] Requesting current server time...
+[INFO] Id: -1, Time: 2026-02-04 17:02:18, Code: 2104, Msg: Market data farm connection is OK:usfarm.nj
+[INFO] Id: -1, Time: 2026-02-04 17:02:18, Code: 2104, Msg: Market data farm connection is OK:usopt.nj
+[INFO] Id: -1, Time: 2026-02-04 17:02:18, Code: 2104, Msg: Market data farm connection is OK:usopt
+[INFO] Id: -1, Time: 2026-02-04 17:02:18, Code: 2104, Msg: Market data farm connection is OK:usfarm
+[INFO] Id: -1, Time: 2026-02-04 17:02:18, Code: 2106, Msg: HMDS data farm connection is OK:euhmds
+[INFO] Id: -1, Time: 2026-02-04 17:02:18, Code: 2106, Msg: HMDS data farm connection is OK:cashhmds
+[INFO] Id: -1, Time: 2026-02-04 17:02:18, Code: 2106, Msg: HMDS data farm connection is OK:fundfarm
+[INFO] Id: -1, Time: 2026-02-04 17:02:18, Code: 2106, Msg: HMDS data farm connection is OK:ushmds
+[INFO] Id: -1, Time: 2026-02-04 17:02:18, Code: 2158, Msg: Sec-def data farm connection is OK:secdefil
+[INFO] Current Time: 1770224539 (Feb 04, 2026 17:02:19)
+┌──────────┬─────────┐
+│ Setting  │ Value   │
+├──────────┼─────────┤
+│ Symbol   │ SPY     │
+│ Quantity │ 4       │
+│ Mode     │ Dry Run │
+└──────────┴─────────┘
+
+[INFO] Contract cache cleared
+[INFO] Strategy state cleared
+[INFO] ========================================
+[INFO] Starting strategy for symbol: SPY
+[INFO] Mode: DRY-RUN
+[INFO] Quantity: 4
+[INFO] ========================================
+[INFO] Step 1/17: Created underlying contract for SPY
+[INFO] Requesting historical data (4 years, weekly)...
+[INFO] Historical Data End - ReqId: 2000, Start: 20220204 19:02:20 Asia/Jerusalem, End: 20260204 19:02:20 Asia/Jerusalem[OK] Received 209 weekly data points
+[OK] Step 2/17: Received historical data
+[INFO] This week bar: 2026-02-04 O:689.58 H:696.96 L:684.03 C:685.13
+[INFO] Last week bar: 2026-01-30 O:690.47 H:697.84 L:684.83 C:691.97
+[OK] Step 3/17: Weekly data validated
+[INFO] Requesting underlying contract details...
+[INFO] Contract Details - ReqId: 2200, Symbol: SPY
+[OK] Received contract details: SPY (ConId: 756733)
+[OK] Step 4/17: Received underlying contract details
+[INFO] Step 5/17: Last underlying price: 685.13
+[INFO] Requesting security definition option parameters...
+[INFO] Contract Details End - ReqId: 2200
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: NASDAQOM, TradingClass: SPY, Strikes: 428, Expirations: 34
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: AMEX, TradingClass: SPY, Strikes: 428, Expirations: 34
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: CBOE2, TradingClass: 2SPY, Strikes: 3, Expirations: 3
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: NASDAQBX, TradingClass: SPY, Strikes: 428, Expirations: 34
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: CBOE, TradingClass: 2SPY, Strikes: 3, Expirations: 3
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: MERCURY, TradingClass: 2SPY, Strikes: 3, Expirations: 3
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: CBOE, TradingClass: SPY, Strikes: 428, Expirations: 34
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: MERCURY, TradingClass: SPY, Strikes: 428, Expirations: 34
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: MEMX, TradingClass: 2SPY, Strikes: 3, Expirations: 3
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: BATS, TradingClass: 2SPY, Strikes: 3, Expirations: 3
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: PEARL, TradingClass: 2SPY, Strikes: 3, Expirations: 3
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: PHLX, TradingClass: 2SPY, Strikes: 3, Expirations: 3
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: EMERALD, TradingClass: 2SPY, Strikes: 3, Expirations: 3
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: ISE, TradingClass: 2SPY, Strikes: 3, Expirations: 3
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: NASDAQBX, TradingClass: 2SPY, Strikes: 3, Expirations: 3
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: SMART, TradingClass: 2SPY, Strikes: 3, Expirations: 3
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: GEMINI, TradingClass: SPY, Strikes: 428, Expirations: 34
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: SAPPHIRE, TradingClass: SPY, Strikes: 428, Expirations: 34
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: NASDAQOM, TradingClass: 2SPY, Strikes: 3, Expirations: 3
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: PSE, TradingClass: 2SPY, Strikes: 3, Expirations: 3
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: PSE, TradingClass: SPY, Strikes: 428, Expirations: 34
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: MIAX, TradingClass: 2SPY, Strikes: 3, Expirations: 3
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: BATS, TradingClass: SPY, Strikes: 428, Expirations: 34
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: PEARL, TradingClass: SPY, Strikes: 428, Expirations: 34
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: BOX, TradingClass: 2SPY, Strikes: 3, Expirations: 3
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: ISE, TradingClass: SPY, Strikes: 428, Expirations: 34
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: MIAX, TradingClass: SPY, Strikes: 428, Expirations: 34
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: EDGX, TradingClass: 2SPY, Strikes: 3, Expirations: 3
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: IBUSOPT, TradingClass: SPY, Strikes: 428, Expirations: 34
+[INFO] SecDefOptParams - ReqId: 2300, Exchange: SMART, TradingClass: SPY, Strikes: 428, Expirations: 34
+[OK] Received 428 strikes and 34 expirations
+[OK] Step 6/17: Received security option parameters
+[OK] Step 7/17: Found 428 strikes
+[INFO] Found 3 valid expirations, selected: 20260206
+[OK] Step 8/17: Using expiration: 20260206
+[INFO] Built 428 option contracts from 428 integer strikes (range: 50 - 1360)
+[OK] Step 9/17: Built 428 option contracts
+[INFO] Starting backtest analysis...
+[INFO] actualChance[10]=72.7
+[INFO] actualChance[11]=66.7
+[INFO] actualChance[12]=66.7
+[INFO] actualChance[13]=66.7
+[INFO] actualChance[14]=69.2
+[INFO] actualChance[15]=69.2
+[INFO] actualChance[16]=66.7
+[INFO] actualChance[17]=73.3
+[INFO] actualChance[18]=75.0
+[INFO] actualChance[19]=72.2
+[INFO] actualChance[20]=75.0
+[INFO] actualChance[21]=76.2
+[INFO] actualChance[22]=73.9
+[INFO] actualChance[23]=76.0
+[INFO] actualChance[24]=73.1
+[INFO] actualChance[25]=75.0
+[INFO] actualChance[26]=67.7
+[INFO] actualChance[27]=65.7
+[INFO] actualChance[28]=62.9
+[INFO] actualChance[29]=65.7
+[INFO] actualChance[30]=69.4
+[INFO] actualChance[31]=69.4
+[INFO] actualChance[32]=69.4
+[INFO] actualChance[33]=71.4
+[INFO] actualChance[34]=72.2
+[INFO] actualChance[35]=74.3
+[INFO] actualChance[36]=75.8
+[INFO] actualChance[37]=76.5
+[INFO] actualChance[38]=75.8
+[INFO] actualChance[39]=78.8
+[INFO] actualChance[40]=74.2
+[INFO] actualChance[41]=74.2
+[INFO] actualChance[42]=71.9
+[INFO] actualChance[43]=71.9
+[INFO] actualChance[44]=71.9
+[INFO] actualChance[45]=68.8
+[INFO] actualChance[46]=71.9
+[INFO] actualChance[47]=71.0
+[INFO] actualChance[48]=68.8
+[INFO] actualChance[49]=68.8
+[INFO] actualChance[50]=67.7
+[INFO] actualChance[51]=69.7
+[INFO] actualChance[52]=68.8
+[INFO] actualChance[53]=71.9
+[INFO] actualChance[54]=72.7
+[INFO] actualChance[55]=71.9
+[INFO] actualChance[56]=66.7
+[INFO] actualChance[57]=66.7
+[INFO] actualChance[58]=66.7
+[INFO] actualChance[59]=70.4
+[INFO] actualChance[60]=70.4
+[INFO] actualChance[61]=74.1
+[INFO] actualChance[62]=70.8
+[INFO] actualChance[63]=73.9
+[INFO] actualChance[64]=77.3
+[INFO] actualChance[65]=76.2
+[INFO] actualChance[66]=76.2
+[INFO] actualChance[67]=80.0
+[INFO] actualChance[68]=80.0
+[INFO] actualChance[69]=77.8
+[INFO] actualChance[70]=76.5
+[INFO] actualChance[71]=76.5
+[INFO] actualChance[72]=76.5
+[INFO] actualChance[73]=75.0
+[INFO] actualChance[74]=75.0
+[INFO] actualChance[75]=75.0
+[INFO] actualChance[76]=73.3
+[INFO] actualChance[77]=71.4
+[INFO] actualChance[78]=69.2
+[INFO] actualChance[79]=66.7
+[INFO] actualChance[80]=72.7
+[INFO] actualChance[81]=80.0
+[INFO] actualChance[82]=87.5
+[INFO] actualChance[83]=85.7
+[INFO] actualChance[84]=85.7
+[INFO] actualChance[85]=100.0
+[INFO] actualChance[86]=100.0
+[INFO] actualChance[87]=100.0
+[INFO] actualChance[88]=100.0
+[INFO] actualChance[89]=100.0
+[INFO] actualChance[90]=100.0
+[INFO] Interpolated: 100 total, 41 values interpolated
+[INFO] Top 10 by distance from (100,100): 100 → 10
+[INFO]   #1: 85% (p=100.0, b=100.0%, f=100.0%, d=0.0)
+[INFO]   #2: 39% (p=78.8, b=100.0%, f=45.9%, d=54.1)
+[INFO]   #3: 67% (p=80.0, b=100.0%, f=45.5%, d=54.5)
+[INFO]   #4: 21% (p=76.2, b=100.0%, f=20.3%, d=79.7)
+[INFO]   #5: 82% (p=87.5, b=100.0%, f=11.1%, d=88.9)
+[INFO]   #6: 99% (p=0.0, b=9.1%, f=100.0%, d=90.9)
+[INFO]   #7: 98% (p=0.0, b=8.2%, f=100.0%, d=91.8)
+[INFO]   #8: 10% (p=72.7, b=100.0%, f=7.8%, d=92.2)
+[INFO]   #9: 97% (p=0.0, b=7.2%, f=100.0%, d=92.8)
+[INFO]   #10: 84% (p=92.9, b=100.0%, f=6.2%, d=93.8)
+
+───────────────────────────────────────────── Optimal Trigger Percentages ──────────────────────────────────────────────
+┌────┬────────────┐
+│ #  │ Percentage │
+├────┼────────────┤
+│ 1  │    85%     │
+│ 2  │    39%     │
+│ 3  │    67%     │
+│ 4  │    21%     │
+│ 5  │    82%     │
+│ 6  │    99%     │
+│ 7  │    98%     │
+│ 8  │    10%     │
+│ 9  │    97%     │
+│ 10 │    84%     │
+└────┴────────────┘
+
+Timeout: 5 minutes (default: all points)
+
+Enter number of points to use (1-10): 4
+Using top 4 point(s)
+[OK] Step 10/17: Using 4 optimal trigger percentages
+[INFO] Calculating strike probabilities...
+[INFO] GAP type: GAP DOWN
+[OK] Calculated probabilities for 428 strikes
+[OK] Step 11/17: Calculated probabilities for 428 contracts (Gap: GAP DOWN)
+[INFO] GAP DOWN 85%: CallTarget=698 PutTarget=702 -> Trigger=700
+[INFO] GAP DOWN 39%: CallTarget=672 PutTarget=678 -> Trigger=675
+[INFO] GAP DOWN 67%: CallTarget=689 PutTarget=694 -> Trigger=692
+[INFO] GAP DOWN 21%: CallTarget=664 PutTarget=671 -> Trigger=668
+[OK] Step 12/17: Calculated 4 trigger prices
+[OK] Validated trigger: 700 (CallSell=705, CallBuy=710, PutSell=695, PutBuy=690)
+[OK] Validated trigger: 675 (CallSell=680, CallBuy=685, PutSell=670, PutBuy=665)
+[OK] Validated trigger: 692 (CallSell=697, CallBuy=702, PutSell=687, PutBuy=682)
+[OK] Validated trigger: 668 (CallSell=673, CallBuy=678, PutSell=663, PutBuy=658)
+[OK] Step 13/17: Validated 4 iron condor positions
+[INFO] Step 13b/17: Displaying position summary...
+
+─────────────────────────────────────────────────── Position Summary ───────────────────────────────────────────────────
+                                      Position Summary
+┌─────────────────┬────────┬─────────┬──────────┬─────────┬───────────┬──────────┬──────────┐
+│        #        │ Spread │ Put Buy │ Put Sell │ Trigger │ Call Sell │ Call Buy │ Verified │
+├─────────────────┼────────┼─────────┼──────────┼─────────┼───────────┼──────────┼──────────┤
+│        1        │   5    │   658   │   663    │   668   │    673    │   678    │    √     │
+│        2        │   5    │   665   │   670    │   675   │    680    │   685    │    √     │
+│        3        │   5    │   682   │   687    │   692   │    697    │   702    │    √     │
+│        4        │   5    │   690   │   695    │   700   │    705    │   710    │    √     │
+├─────────────────┼────────┼─────────┼──────────┼─────────┼───────────┼──────────┼──────────┤
+│ 4 of 4 verified │        │         │          │         │           │          │          │
+└─────────────────┴────────┴─────────┴──────────┴─────────┴───────────┴──────────┴──────────┘
+
+[OK] Step 13b/17: Position summary displayed
+[INFO] Step 13c/17: Running verification loop...
+[OK] Step 13c/17: Verification complete - 4 positions ready
+
+─────────────────────────────────────────────── Final Positions Summary ────────────────────────────────────────────────
+                       Iron Condor Positions
+┌───┬────────┬─────────┬──────────┬─────────┬───────────┬──────────┐
+│ # │ Spread │ Put Buy │ Put Sell │ Trigger │ Call Sell │ Call Buy │
+├───┼────────┼─────────┼──────────┼─────────┼───────────┼──────────┤
+│ 1 │   5    │   658   │   663    │   668   │    673    │   678    │
+│ 2 │   5    │   665   │   670    │   675   │    680    │   685    │
+│ 3 │   5    │   682   │   687    │   692   │    697    │   702    │
+│ 4 │   5    │   690   │   695    │   700   │    705    │   710    │
+└───┴────────┴─────────┴──────────┴─────────┴───────────┴──────────┘
+
+┌─Order Summary───────┐
+│ Total Positions:  4 │
+│ Spread Width:     5 │
+└─────────────────────┘
+
+Timeout: 5 minutes (default: NO - orders not placed)
+
+Approve and place orders? (Y/N):
