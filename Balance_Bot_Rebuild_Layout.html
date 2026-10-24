@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<title>Balance Bot Rebuild Layout</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Archivo+Narrow:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: assembly sheet. One drawing per layer, top to bottom of the robot, each with its parts list. */
+:root {
+  --bg: #eef1f3; --panel: #f9fafb; --ink: #142029; --ink-2: #4a5761; --ink-3: #7b8790; --rule: #d5dce1; --accent: #c2410c;
+  --font-display: "Archivo Narrow", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  --paper: #ffffff; --grid: #e3e8ec;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #12181d; --panel: #1a2229; --ink: #e8edf0; --ink-2: #aab5bd; --ink-3: #7c8892; --rule: #2c3741; --accent: #f08a4b; --paper: #f4f6f7; --grid: #e3e8ec; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #12181d; --panel: #1a2229; --ink: #e8edf0; --ink-2: #aab5bd; --ink-3: #7c8892; --rule: #2c3741; --accent: #f08a4b; --paper: #f4f6f7; --grid: #e3e8ec; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.5; }
+.wrap { max-width: 1100px; margin: 0 auto; padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font-family: var(--font-display); font-size: 28px; margin: 0 0 4px; text-wrap: balance; }
+h2 { font-family: var(--font-display); font-size: 19px; margin: 0; letter-spacing: .01em; }
+.lead { color: var(--ink-2); max-width: 75ch; margin: 0 0 16px; }
+section { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; margin-bottom: 18px; display: grid; gap: 10px; }
+.head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.tag { font-family: var(--font-data); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); }
+.sheet { background: var(--paper); border-radius: 4px; overflow-x: auto; }
+.sheet svg { display: block; width: 100%; min-width: 560px; height: auto; }
+ul { margin: 0; padding-left: 18px; color: var(--ink-2); }
+li { margin: 2px 0; }
+li b { color: var(--ink); }
+.warn { border-left: 3px solid var(--accent); padding: 4px 10px; color: var(--ink); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th { color: var(--ink-2); font-weight: 600; font-size: 12px; }
+td.mono { font-family: var(--font-data); font-size: 12px; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 6px; }
+</style>
+
+<div class="wrap">
+  <h1>Balance Bot Rebuild Layout</h1>
+  <p class="lead">Four 4 × 6 cm boards, one function each, connected as a chain: every board has a cable that plugs into a socket on the board above. Parts: N20 6 V 300 rpm motors with Hall encoders, a TB6612FNG driver, a GY-521 MPU6050, your Arduino Pro Mini, an HC-SR04 ultrasonic sensor, two MP1584 step-down regulators (6.0 V for the motors, 5.0 V for the logic), a 2 × 18650 holder in series (7.4 V, no boost regulators) and a reserved slot for an HC-05 Bluetooth module. Hole grid 2.54 mm, 20 columns × 14 rows (A–N), as in the article. Module sizes are typical values; measure the real parts when they arrive.</p>
+
+  <section>
+    <div class="head"><span class="tag">Overview</span><h2>The stack, seen from the side</h2></div>
+    <div class="sheet" id="dstack"></div>
+    <ul>
+      <li><b>Chain:</b> board 0 → cable M → socket J0 on board 1 → cable P → socket J1 on board 2 → cable L → socket J2 on board 3. Unplug any socket to take the boards apart.</li>
+      <li><b>Where the sockets are:</b> J0 on top of board 1 at the front edge (cable M comes up around the front edge); J1 on top of board 2, running front to back in column 11 (cable P comes up around the back edge); J2 under board 3, back half (cable L goes straight up). Seen from the right side, front on the left.</li>
+      <li><b>Spacers:</b> 25 mm between each pair of boards, so 12 spacers instead of the article's 8 (4 more needed). Height grows by about 25 mm, which raises the center of mass; that makes the robot fall more slowly. I will check it in the emulator with the measured mass and center of mass after the build.</li>
+      <li>Power and motor parts sit on board 1, directly above the motors (short motor wires). The logic on board 2 is one board further away from the motor noise.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="head"><span class="tag">Board 0 · motor board</span><h2>Motors with encoders</h2></div>
+    <div class="sheet" id="d0"></div>
+    <ul>
+      <li><b>No socket on this board.</b> The two motors' wires (M1, M2) and encoder wires (VCC, GND, A, B) are joined into one 10-wire <b>cable M</b> with a plug that goes up to <b>J0 on the power board</b>.</li>
+      <li><b>Brackets stay in the same holes.</b> The new motors have the same 12 × 10 mm housing, so the wheels stay where they are.</li>
+      <li>Each encoder adds about 8–10 mm at the back, so the free gap between the motors shrinks from about 28 mm to about <b>11 mm</b>. This only works with the encoder plug <b>on top</b>; a plug pointing backward needs 5–10 mm more per motor.</li>
+      <li>The underside of this board stays empty.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="head"><span class="tag">Board 1 · power board</span><h2>Motor driver and both regulators</h2></div>
+    <div class="sheet" id="d0u"></div>
+    <ul>
+      <li><b>TB6612</b> on the right, <b>MP1584 #1</b> (6.0 V, motors) upper left, <b>MP1584 #2</b> (5.0 V, logic) lower left, and the reused <b>10 µF capacitor</b> across TB6612 VM/GND.</li>
+      <li><b>Socket J0</b> (10 pins, front edge) takes cable M from the motors. <b>Cable P</b> (14 wires, back edge) goes up to J1 on the logic board.</li>
+      <li><b>Star ground on this board:</b> battery − arrives here (through J1 and cable P), and MP1584 #1, MP1584 #2 and the TB6612 each get their own ground wire to that point.</li>
+      <li class="warn">Set both MP1584 with a multimeter <b>before</b> plugging anything in: #1 to 6.0 V, #2 to 5.0 V. The trim screws stay reachable from the side of the stack.</li>
+      <li>The old MX1508 is removed.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="head"><span class="tag">Board 2 · logic board</span><h2>Pro Mini and MPU6050</h2></div>
+    <div class="sheet" id="d1"></div>
+    <ul>
+      <li><b>Arduino Pro Mini (5 V / 16 MHz)</b> on the right, as in the article, pins in columns 13 and 19. Its 6-pin programming header points to the top edge, so the USB-serial adapter can still plug in for uploads and tests. A4/A5 (I2C) are inner pads.</li>
+      <li>The Pro Mini gets <b>5.0 V on VCC</b> from MP1584 #2 on the power board (through J1). Its RAW pin and small onboard regulator stay unused.</li>
+      <li><b>Socket J1</b> (14 pins, column 11) takes cable P from the power board. <b>Cable L</b> (8 wires) goes up to J2 on the top board.</li>
+      <li><b>MPU6050</b> in the upper left, header in row F. The pins used are highlighted. The lower left stays free.</li>
+      <li class="warn">The MPU6050 is turned 90° compared with the article, so its X axis now points forward. The new program reads gyro Y and atan2(accX, accZ) instead of gyro X and atan2(accY, accZ). I will handle that in software and we will check the sign with the robot tilted forward before any test.</li>
+      <li>The MPU6050's <b>INT pin stays unconnected</b>. In the article it went to D2, which now belongs to the left encoder.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="head"><span class="tag">Board 3 · top board, underside</span><h2>Sensors and the battery feed</h2></div>
+    <div class="sheet" id="d2u"></div>
+    <ul>
+      <li>The double holder covers the whole top side, so the <b>ultrasonic sensor sits on the underside</b> of the top board, at the front edge, still facing forward.</li>
+      <li><b>Socket J2</b> (8 pins, column 13) takes cable L from the logic board. It carries the switched battery (BAT+/BAT−) down the chain to the power board, and 5 V plus the sensor signals up.</li>
+      <li><b>No boost regulators.</b> Both MP1584 step-down regulators are on the power board. The MT3608 boards are not used.</li>
+      <li><b>Reserved slot for an HC-05 Bluetooth module</b> (ZS-040 board, about 37 × 16 mm), not fitted yet. Four wires from the Pro Mini (5V, GND, D0, D1) end in a 4-pin socket, so the module simply plugs in later. While nothing is plugged in, uploads and the serial monitor through the USB-serial adapter work as usual (the adapter uses the same D0/D1).</li>
+      <li>When it is enabled later: HC-05 TXD → D0 directly; Pro Mini D1 → 1 kΩ → HC-05 RXD → 2 kΩ → GND (the module's input is 3.3 V). Unplug the module for uploads.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="head"><span class="tag">Board 3 · top board, top side</span><h2>2 × 18650 battery holder</h2></div>
+    <div class="sheet" id="d2"></div>
+    <ul>
+      <li>The holder (about 77 × 41 × 20 mm) covers the full 40 mm board width and overhangs both ends, like the single holder did.</li>
+      <li><b>The cells are in series</b>: the box has one red and one black lead, and the cells sit end to end. Check with a multimeter after inserting the cells: <b>7.4–8.4 V</b> between the leads. If it reads 3.7–4.2 V, the box is parallel; tell me, and the circuit changes back.</li>
+      <li>The <b>switch</b> sits in the red lead, glued to the side of the holder or a spacer.</li>
+      <li class="warn">Charge both cells fully before inserting them, and use two cells of the same type and age. Stop using the robot below about 6.4 V (3.2 V per cell).</li>
+      <li>About 47 g more weight at the top raises the center of mass. That makes the robot fall more slowly, which helps; I will update the emulator with the new mass and height.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="head"><span class="tag">Circuit</span><h2>Wiring diagram</h2></div>
+    <div class="sheet" id="dc"></div>
+    <ul>
+      <li><b>Logic 5 V</b> comes from <b>MP1584 #2</b> (set to 5.0 V) into the Pro Mini's <b>VCC</b> pin. Load is about 60–100 mA (about 140 mA with the HC-05): Pro Mini, MPU6050, two encoders, TB6612 logic and the ultrasonic sensor. The Pro Mini's RAW pin and its small onboard regulator stay unused.</li>
+      <li><b>The two regulators at a glance</b> (orange frames in the drawings): both on the <b>power board</b>. <b>MP1584 #1</b>, upper left, set to <b>6.0 V</b>, feeds TB6612 VM (motors). <b>MP1584 #2</b>, lower left, set to <b>5.0 V</b>, feeds Pro Mini VCC and the 5 V logic rail. The large black square on each board is its coil (marked 4R7 = 4.7 µH).</li>
+      <li><b>Motors</b> get a constant <b>6.0 V</b> from the MP1584 step-down regulator, their rated voltage, no matter how charged the battery is. No PWM cap is needed. Below about 7 V battery the output sags slightly (about 5.8 V at 6.5 V).</li>
+      <li class="warn"><b>Never connect the USB-serial adapter's 5 V/VCC wire.</b> Use only GND, TX, RX and DTR, and always power the robot from the battery (switch on), also for uploads. USB cannot supply the motors (about 0.5 A available, up to about 1.5 A needed). With the adapter's 5 V connected and the switch off, current would flow backward through MP1584 #2 into MP1584 #1 and the motors, overloading the adapter or the PC's USB port, and two 5 V supplies would fight when the switch is on.</li>
+      <li class="warn"><b>Keep motor noise away from the logic</b> (the article's lesson): reuse the <b>10 µF capacitor</b> from the old bottom board across TB6612 <b>VM / GND</b>, right at the module, observing polarity. On the power board, give each MP1584 input its own wire from BAT+, and give MP1584 #1, MP1584 #2 and the TB6612 each their own ground wire to the point where BAT− arrives (star ground). Keep motor wires short, twisted in pairs, and away from SDA/SCL.</li>
+    </ul>
+    <div class="tablewrap"><table id="wires"></table></div>
+  </section>
+
+  <section>
+    <div class="head"><span class="tag">Connectors</span><h2>Board-to-board chain</h2></div>
+    <p class="lead" style="margin:0">Each board has a cable soldered to it that plugs into a socket on the board above. Use 2.54 mm pin headers with Dupont housings; pin 1 is the square pin, mark it on the housing too. Power pins sit at one end of each connector, away from the encoder and sensor signals.</p>
+    <div class="tablewrap"><table>
+      <tr><th>Pin</th><th>J0 on the power board ← cable M from the motor board (10)</th><th>J1 on the logic board ← cable P from the power board (14)</th><th>J2 on the top board ← cable L from the logic board (8)</th></tr>
+      <tr><td class="mono">1</td><td class="mono">L-M1 left motor + (from TB6612 AO1)</td><td class="mono">BAT+ switched battery (down to the power board)</td><td class="mono">BAT+ switched battery (from the switch)</td></tr>
+      <tr><td class="mono">2</td><td class="mono">L-M2 left motor − (AO2)</td><td class="mono">BAT− battery ground (to the star point)</td><td class="mono">BAT− battery ground</td></tr>
+      <tr><td class="mono">3</td><td class="mono">R-M1 right motor + (BO1)</td><td class="mono">5V logic (from MP1584 #2 to Pro Mini VCC)</td><td class="mono">5V logic (HC-SR04, HC-05)</td></tr>
+      <tr><td class="mono">4</td><td class="mono">R-M2 right motor − (BO2)</td><td class="mono">GND logic</td><td class="mono">GND logic</td></tr>
+      <tr><td class="mono">5</td><td class="mono">E5V encoder supply (5 V logic)</td><td class="mono">D6 → PWMA</td><td class="mono">D9 → HC-SR04 TRIG</td></tr>
+      <tr><td class="mono">6</td><td class="mono">EGND encoder ground (logic)</td><td class="mono">D7 → AIN1</td><td class="mono">D10 ← HC-SR04 ECHO</td></tr>
+      <tr><td class="mono">7</td><td class="mono">L-A left encoder A</td><td class="mono">D8 → AIN2</td><td class="mono">D0 (RXI) ← HC-05 TXD</td></tr>
+      <tr><td class="mono">8</td><td class="mono">L-B left encoder B</td><td class="mono">D5 → PWMB</td><td class="mono">D1 (TXO) → divider → HC-05 RXD</td></tr>
+      <tr><td class="mono">9</td><td class="mono">R-A right encoder A</td><td class="mono">D4 → BIN1</td><td></td></tr>
+      <tr><td class="mono">10</td><td class="mono">R-B right encoder B</td><td class="mono">D12 → BIN2</td><td></td></tr>
+      <tr><td class="mono">11</td><td></td><td class="mono">D2 ← left encoder A (from J0 pin 7)</td><td></td></tr>
+      <tr><td class="mono">12</td><td></td><td class="mono">A0 ← left encoder B (J0 pin 8)</td><td></td></tr>
+      <tr><td class="mono">13</td><td></td><td class="mono">D3 ← right encoder A (J0 pin 9)</td><td></td></tr>
+      <tr><td class="mono">14</td><td></td><td class="mono">A1 ← right encoder B (J0 pin 10)</td><td></td></tr>
+    </table></div>
+    <ul>
+      <li><b>Where:</b> cable M leaves the motor board at its front edge (row N); J0 sits at the front edge of the power board (row N) and cable P leaves its back edge (row A); J1 is in column 11 of the logic board and cable L leaves its lower left; J2 is in column 13 on the top board's underside. All marked in orange.</li>
+      <li><b>The switch and both battery leads stay on the top board.</b> With any socket unplugged, every board below it is without power.</li>
+      <li>The encoder signals pass straight through the power board from J0 to cable P; only the motor wires and the encoder supply connect to parts there.</li>
+      <li>The 1k/2k divider for the HC-05 sits on the top board next to its socket, so cable L carries the plain D1 signal.</li>
+      <li class="warn">Dupont plugs can be reversed by mistake. Mark pin 1 on every housing and check with a multimeter before the first power-up: J1 and J2 pin 1 to pin 2 must not be a short.</li>
+    </ul>
+  </section>
+  <section>
+    <div class="head"><span class="tag">Check</span><h2>Verified against datasheets and references</h2></div>
+    <div class="tablewrap"><table>
+      <tr><th>Part</th><th>Reference says</th><th>In this design</th><th>Result</th></tr>
+      <tr><td>TB6612FNG</td><td>VM 2.5–13.5 V, VCC 2.7–5.5 V, about 1.0 A continuous per channel at VM ≥ 4.5 V, STBY low = standby, PWM up to 100 kHz, apply VCC before VM</td><td>VM 6.0 V, VCC 5.0 V, motors about 0.4 A at stall, STBY on 5 V, PWM about 976 Hz</td><td>OK, see note 1</td></tr>
+      <tr><td>MP1584EN</td><td>Input 4.5–28 V, output adjustable 0.8 V up, 3 A</td><td>Input 6.4–8.4 V, outputs 6.0 V and 5.0 V</td><td>OK, see note 2</td></tr>
+      <tr><td>Pro Mini 5 V / 16 MHz</td><td>VCC takes a regulated 5 V; never feed RAW and VCC at the same time; A4/A5 are inner pads; DTR on the 6-pin header resets for uploads</td><td>5.0 V into VCC, RAW unused, A4/A5 for I2C, adapter without its VCC wire</td><td>OK</td></tr>
+      <tr><td>GY-521 MPU6050</td><td>VCC 3.3 or 5 V (onboard regulator), I2C pull-ups on board, address 0x68 with AD0 low, INT optional</td><td>VCC 5 V, SDA/SCL to A4/A5, AD0 and INT unconnected</td><td>OK (same as now)</td></tr>
+      <tr><td>HC-SR04</td><td>5 V, about 15 mA, trigger ≥ 10 µs, 60 ms or more between pings</td><td>VCC 5 V, TRIG D9, ECHO D10</td><td>OK, see note 3</td></tr>
+      <tr><td>HC-05 (ZS-040)</td><td>VCC 3.6–6 V, RXD is 3.3 V only (1k/2k divider), TXD safe to a 5 V input, 9600 baud data / 38400 AT</td><td>VCC 5 V, divider on RXD, TXD direct to D0</td><td>OK</td></tr>
+      <tr><td>N20 encoder motor</td><td>Pins M1, M2, GND, VCC, C1, C2; encoder supply 3.3 or 5 V; pin order differs between sellers</td><td>Encoder VCC 5 V, C1/C2 to D2/D3 and A0/A1, M1/M2 to the TB6612</td><td>OK, see note 4</td></tr>
+      <tr><td>ATmega328P</td><td>External interrupts INT0 = D2, INT1 = D3; D5/D6 PWM on Timer0 at about 976 Hz</td><td>Encoders A on D2/D3, motor PWM on D5/D6</td><td>OK</td></tr>
+    </table></div>
+    <ul>
+      <li><b>Note 1:</b> Toshiba asks for VCC before VM at power-up. Both regulators start from the same switch within milliseconds of each other, and the inputs have internal pull-downs, so the outputs stay off at power-up. If the motors ever twitch at switch-on, move STBY from 5 V to the free pin D11 and enable it in <code>setup()</code>.</li>
+      <li><b>Note 2:</b> No dropout figure is published. Expect the 6.0 V output to sag slightly when the battery falls below about 7 V; the 5.0 V output keeps margin down to the 6.4 V stop.</li>
+      <li><b>Note 3:</b> The old library call blocks; the new program will trigger it from the timer, at most every 60 ms.</li>
+      <li><b>Note 4:</b> Before connecting, check each motor's pins with a multimeter (continuity M1/M2 across the motor). If the encoder outputs have no pull-ups, the program enables the Pro Mini's internal ones.</li>
+    </ul>
+    <p class="lead" style="margin:0;font-size:12.5px">Sources: <a href="https://cdn.sparkfun.com/datasheets/Robotics/TB6612FNG.pdf">TB6612FNG datasheet</a> · <a href="https://faculty-web.msoe.edu/johnsontimoj/Common/FILES/TB6612FNG_application_note_en_20160916.pdf">TB6612FNG application note</a> · <a href="https://content.instructables.com/FT8/0X4N/J9SVVWSX/FT80X4NJ9SVVWSX.pdf">MP1584 datasheet</a> · <a href="https://www.arduino.cc/en/Main/ArduinoBoardProMini">Arduino Pro Mini</a> · <a href="https://forum.arduino.cc/t/how-to-powered-pro-mini/341771">Pro Mini power</a> · <a href="https://mschoeffler.com/2017/10/05/tutorial-how-to-use-the-gy-521-module-mpu-6050-breakout-board-with-the-arduino-uno/">GY-521 tutorial</a> · <a href="https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf">HC-SR04 datasheet</a> · <a href="https://protosupplies.com/product/hc-05-zs-040-bluetooth-module/">HC-05 ZS-040</a> · <a href="https://electricdiylab.com/controlling-n20-encoder-micro-gear-motor-with-arduino/">N20 encoder wiring</a> · <a href="https://opensystools.com/cheat-sheets/arduino-pinout/">ATmega328P pins and PWM</a></p>
+  </section>
+</div>
+
+<script>
+'use strict';
+const P = 2.54, X0 = 5.87, Y0 = 3.49, ROWS = 'ABCDEFGHIJKLMN';
+const cx = c => X0 + (c - 1) * P, ry = r => Y0 + (typeof r === 'string' ? ROWS.indexOf(r) : r) * P;
+const C = { board: '#4e8f55', hole: '#c9dccb', holeIn: '#3d6f43', label: '#e9e46b', ink: '#1b2329', ink2: '#5b6670',
+  brass: '#c9a646', can: '#a9b1b8', enc: '#1f4e79', white: '#f7f7f5', red: '#c83a2c', nano: '#1f5fa8', mpu: '#2c4a9a',
+  mt: '#2a5db0', tb: '#c8322b', black: '#262626', pinUsed: '#ffd23f', wireR: '#d0312d', wireK: '#222', wireB: '#1f5fd1', wireG: '#2e9e44' };
+
+function svg(id, vb) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  el.setAttribute('viewBox', vb.join(' ')); el.setAttribute('role', 'img');
+  document.getElementById(id).appendChild(el);
+  const add = (tag, attrs, text) => { const n = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]); if (text !== undefined) n.textContent = text; el.appendChild(n); return n; };
+  return { el, add,
+    rect: (x, y, w, h, fill, o = {}) => add('rect', Object.assign({ x, y, width: w, height: h, fill, rx: o.rx || 0.4, stroke: o.stroke || 'none', 'stroke-width': o.sw || 0.25, 'stroke-dasharray': o.dash || 'none', opacity: o.op || 1 })),
+    text: (x, y, s, o = {}) => add('text', { x, y, 'font-size': o.size || 2.2, fill: o.fill || C.ink, 'text-anchor': o.anchor || 'middle', 'font-family': o.mono ? 'IBM Plex Mono, Consolas, monospace' : 'Archivo, system-ui, sans-serif', 'font-weight': o.bold ? 700 : 400, transform: o.rot ? `rotate(${o.rot} ${x} ${y})` : '' }, s),
+    line: (pts, stroke, w = 0.6, o = {}) => add('polyline', { points: pts.map(p => p.join(',')).join(' '), fill: 'none', stroke, 'stroke-width': w, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', 'stroke-dasharray': o.dash || 'none' }),
+    circle: (x, y, r, fill, o = {}) => add('circle', { cx: x, cy: y, r, fill, stroke: o.stroke || 'none', 'stroke-width': o.sw || 0.25 }) };
+}
+function grid(s, vb) { // drawing-paper grid like the article
+  for (let x = Math.ceil(vb[0] / 5) * 5; x < vb[0] + vb[2]; x += 5) s.line([[x, vb[1]], [x, vb[1] + vb[3]]], C.hole, 0.08);
+  for (let y = Math.ceil(vb[1] / 5) * 5; y < vb[1] + vb[3]; y += 5) s.line([[vb[0], y], [vb[0] + vb[2], y]], C.hole, 0.08);
+}
+function board(s, o = {}) {
+  s.rect(0, 0, 60, 40, C.board, { rx: 0.8 });
+  for (let r = 0; r < 14; r++) for (let c = 1; c <= 20; c++) { s.circle(cx(c), ry(r), 0.85, C.hole); s.circle(cx(c), ry(r), 0.4, C.holeIn); }
+  if (!o.noLabels) {
+    for (let c = 1; c <= 20; c++) s.text(cx(c), 1.9, String(c), { size: 1.3, fill: C.label });
+    for (let r = 0; r < 14; r++) s.text(2.2, ry(r) + 0.45, ROWS[r], { size: 1.3, fill: C.label });
+  }
+  for (const [x, y] of [[2.6, 2.6], [57.4, 2.6], [2.6, 37.4], [57.4, 37.4]]) { s.circle(x, y, 2.4, '#efece0', { stroke: '#b9b4a0', sw: 0.3 }); s.circle(x, y, 1.1, '#b9b4a0'); }
+}
+// board-to-board connector: vertical 2.54 mm header in column c from row r0, pin 1 square
+function connV(s, c, r0, labels, name, side) {
+  const y0 = ry(r0) - 1.4, h = (labels.length - 1) * P + 2.8;
+  s.rect(cx(c) - 1.4, y0, 2.8, h, '#1b1b1b', { stroke: '#ff8a3d', sw: 0.45, rx: 0.3 });
+  labels.forEach((lab, i) => {
+    const x = cx(c), y = ry(ROWS.indexOf(r0) + i);
+    if (i === 0) s.rect(x - 0.8, y - 0.8, 1.6, 1.6, C.pinUsed, { stroke: '#555', sw: 0.2, rx: 0.1 });
+    else s.circle(x, y, 0.8, C.pinUsed, { stroke: '#555', sw: 0.2 });
+    s.text(x + (side === 'l' ? -1.9 : 1.9), y + 0.35, lab, { size: 0.85, fill: '#fff', mono: true, bold: true, anchor: side === 'l' ? 'end' : 'start' });
+  });
+  s.text(cx(c), y0 - 0.6, name, { size: 1.3, fill: '#ff8a3d', bold: true });
+}
+// cable soldered to this board, going up to the next board
+function cableUp(s, x1, x2, y, label) {
+  s.rect(x1, y - 1.1, x2 - x1, 2.2, '#ff8a3d', { op: 0.35, stroke: '#ff8a3d', sw: 0.35, rx: 0.4 });
+  s.text((x1 + x2) / 2, y + 0.45, label, { size: 1.1, fill: '#fff', bold: true });
+}
+const J0 = ['L-M1', 'L-M2', 'R-M1', 'R-M2', 'E5V', 'EGND', 'L-A', 'L-B', 'R-A', 'R-B'];
+const J1 = ['BAT+', 'BAT-', '5V', 'GND', 'D6', 'D7', 'D8', 'D5', 'D4', 'D12', 'D2', 'A0', 'D3', 'A1'];
+const J2 = ['BAT+', 'BAT-', '5V', 'GND', 'D9', 'D10', 'D0', 'D1'];
+// horizontal version: pins along row r from column c0, labels above
+function connH(s, c0, r, labels, name) {
+  const x0 = cx(c0) - 1.4, w = (labels.length - 1) * P + 2.8, y = ry(r);
+  s.rect(x0, y - 1.4, w, 2.8, '#1b1b1b', { stroke: '#ff8a3d', sw: 0.45, rx: 0.3 });
+  labels.forEach((lab, i) => { const x = cx(c0 + i);
+    if (i === 0) s.rect(x - 0.8, y - 0.8, 1.6, 1.6, C.pinUsed, { stroke: '#555', sw: 0.2, rx: 0.1 });
+    else s.circle(x, y, 0.8, C.pinUsed, { stroke: '#555', sw: 0.2 });
+    s.text(x, y - 2, lab, { size: 0.72, fill: '#fff', mono: true, bold: true }); });
+  s.text(x0 + w / 2, y + 3.4, name, { size: 1.2, fill: '#ff8a3d', bold: true });
+}
+function pinsRow(s, c0, r, labels, used, o = {}) {
+  labels.forEach((lab, i) => {
+    const x = cx(c0 + i), y = ry(r), u = used.includes(lab);
+    s.circle(x, y, 0.95, u ? C.pinUsed : '#d8d8d8', { stroke: '#555', sw: 0.2 });
+    s.text(x, y + (o.below ? 2.9 : -1.6), lab, { size: 1.05, fill: '#fff', mono: true, bold: u });
+  });
+}
+function dim(s, x1, x2, y, label) {
+  s.line([[x1, y], [x2, y]], C.ink2, 0.2); s.line([[x1, y - 1], [x1, y + 1]], C.ink2, 0.2); s.line([[x2, y - 1], [x2, y + 1]], C.ink2, 0.2);
+  s.text((x1 + x2) / 2, y - 0.7, label, { size: 1.6, fill: C.ink2 });
+}
+
+// ---------- stack, side view (seen from the robot's right side: front on the left) ----------
+(function () {
+  const vb = [-22, -24, 172, 126]; const s = svg('dstack', vb);
+  const D = 40, X = r => D - (3.49 + ROWS.indexOf(r) * P);   // row -> distance from the front edge
+  const top = [80, 55, 30, 5];                                  // top surface of boards 0..3
+  const OR = '#ff8a3d', ORD = '#c2410c';
+  // floor, wheel, spacers, boards
+  s.line([[-20, 95], [150, 95]], C.ink2, 0.4); s.text(-20, 93.6, 'floor', { size: 2, fill: C.ink2, anchor: 'start' });
+  s.circle(20, 74, 21, 'none', { stroke: C.ink2, sw: 0.4, }); s.circle(20, 74, 1.5, C.ink2);
+  for (const sx of [1.5, 38.5]) for (let i = 1; i < 4; i++) s.rect(sx - 1.4, top[i] + 1.6, 2.8, 25 - 1.6, '#efece0', { stroke: '#b9b4a0', sw: 0.3, rx: 0.3 });
+  const names = ['Board 0 · motor board', 'Board 1 · power board', 'Board 2 · logic board', 'Board 3 · top board'];
+  top.forEach((y, k) => { s.rect(0, y, D, 1.6, C.board, { rx: 0.2 }); s.text(-2, y + 1.4, String(k), { size: 2.6, bold: true, anchor: 'end' }); });
+  s.text(0, 99.5, '◄ FRONT', { size: 2.2, bold: true, anchor: 'start' }); s.text(D, 99.5, 'BACK ►', { size: 2.2, bold: true, anchor: 'end' });
+  // parts, drawn pale so the connectors stand out
+  const pale = (x, y, w, h, lab) => { s.rect(x, y, w, h, '#dfe5ea', { stroke: '#aab4bc', sw: 0.25 }); s.text(x + w / 2, y + h / 2 + 0.7, lab, { size: 1.6, fill: C.ink2 }); };
+  pale(14, 68, 12, 12, 'motor'); s.rect(18, 65.5, 4, 2.5, '#555');                 // motor seen end-on, encoder plug on top
+  pale(9, 50.5, 28, 4.5, 'TB6612 + 2× MP1584');
+  pale(6, 25.5, 30, 4.5, 'Pro Mini + MPU6050');
+  s.rect(-0.5, -15, 41, 20, '#2e2e2e', { rx: 1 }); s.text(20, -3.6, 'battery holder', { size: 2.4, fill: '#fff', bold: true });
+  pale(-6, 6.6, 12, 5, 'HC-SR04');
+  // socket = black block with orange edge; plug = orange block; cable = orange line
+  const socket = (x1, x2, y, h) => s.rect(x1, y, x2 - x1, h, '#1b1b1b', { stroke: OR, sw: 0.5, rx: 0.3 });
+  const plug = (x1, x2, y, h) => s.rect(x1, y, x2 - x1, h, OR, { stroke: ORD, sw: 0.4, rx: 0.3 });
+  const cable = pts => s.line(pts, OR, 0.9);
+  const callout = (x, y, tx, ty, lines) => { s.line([[x, y], [tx - 1, ty - 0.6]], ORD, 0.25); lines.forEach((t, i) => s.text(tx, ty + i * 2.6, t, { size: i ? 1.9 : 2.2, fill: i ? C.ink : ORD, bold: !i, anchor: 'start' })); };
+  // cable M: soldered on board 0 at the front edge, around the front edge of board 1, into J0 on top of board 1
+  const xJ0 = X('N');
+  socket(xJ0 - 1.3, xJ0 + 1.3, top[1] - 3.5, 3.5); plug(xJ0 - 1.5, xJ0 + 1.5, top[1] - 6.2, 2.7);
+  cable([[xJ0, top[0]], [xJ0, top[0] - 4], [-4, top[0] - 8], [-4, top[1] - 9], [xJ0, top[1] - 9], [xJ0, top[1] - 6.2]]);
+  callout(xJ0 + 1.5, top[1] - 4.5, 56, top[1] - 8, ['J0 socket · board 1, top side, front edge', '← cable M (10 wires) from board 0']);
+  callout(-4, top[0] - 12, 56, top[0] - 8, ['cable M', 'soldered to board 0 at the front edge (row N)']);
+  // cable P: soldered on board 1 at the back edge, around the back edge of board 2, into J1 on top of board 2 (header along the depth)
+  const xA = X('A'), xN = X('N');
+  socket(xN - 1.3, xA + 1.3, top[2] - 3.5, 3.5); plug(xN - 1.5, xA + 1.5, top[2] - 6.2, 2.7);
+  cable([[xA, top[1]], [xA, top[1] - 3], [D + 4, top[1] - 7], [D + 4, top[2] - 9], [xA, top[2] - 9], [xA, top[2] - 6.2]]);
+  callout(xA + 1.5, top[2] - 4.5, 56, top[2] - 6, ['J1 socket · board 2, top side, column 11', '← cable P (14 wires) from board 1, pin 1 at the back']);
+  callout(D + 4, top[1] - 12, 56, top[1] + 4, ['cable P', 'soldered to board 1 at the back edge (row A)']);
+  // cable L: soldered on board 2 (row K), straight up into J2 under board 3 (rows A..H)
+  const xK = X('K'), xH = X('H');
+  socket(xH - 1.3, xA + 1.3, top[3] + 1.6, 3.5); plug(xH - 1.5, xA + 1.5, top[3] + 5.1, 2.7);
+  cable([[xK, top[2]], [xK, top[3] + 14], [xH, top[3] + 9], [xH, top[3] + 7.8]]);
+  callout(xA + 1.5, top[3] + 3.4, 56, top[3] + 3, ['J2 socket · board 3, underside, column 13', '← cable L (8 wires) from board 2']);
+  callout(xK, top[2] - 12, 56, top[2] - 16, ['cable L', 'soldered to board 2 in the front half (row K)']);
+  // legend
+  socket(56, 60, 83, 2.6); s.text(61.5, 85, 'socket (on the upper board)', { size: 1.9, anchor: 'start' });
+  plug(96, 100, 83, 2.6); s.text(101.5, 85, 'plug on the cable', { size: 1.9, anchor: 'start' });
+  s.line([[126, 84.3], [131, 84.3]], OR, 0.9); s.text(132.5, 85, 'cable', { size: 1.9, anchor: 'start' });
+  s.text(56, 89.5, 'Each cable is soldered to the lower board and plugs into the socket of the board above.', { size: 1.9, fill: C.ink2, anchor: 'start' });
+})();
+// ---------- Layer 0 top: motors ----------
+(function () {
+  const vb = [-34, -8, 128, 56]; const s = svg('d0', vb); grid(s, vb); board(s);
+  function motor(m) { // m = +1 left, -1 right; drawn in left coordinates and mirrored
+    const X = x => m > 0 ? x : 60 - x, R = (x1, x2, y, h, fill, o) => s.rect(Math.min(X(x1), X(x2)), y, Math.abs(x2 - x1), h, fill, o);
+    R(-29.5, -10.5, -1, 42, 'none', { stroke: C.ink2, dash: '1 0.8', sw: 0.3 });           // wheel outline
+    s.text(X(-20), 44.5, 'wheel 42 mm', { size: 1.7, fill: C.ink2 });
+    R(-10.5, -8, 18.5, 3, '#9aa1a6');                                                          // shaft
+    R(-8, 1, 15, 10, C.brass, { stroke: '#8c7426' });                                          // gearbox
+    R(-0.5, 12.5, 11.5, 17, C.white, { stroke: '#bdbdb5' });                                   // bracket
+    R(2, 8, 7, 4.5, C.white, { stroke: '#bdbdb5' }); R(2, 8, 28.5, 4.5, C.white, { stroke: '#bdbdb5' });
+    s.circle(X(5), 9, 0.9, '#555'); s.circle(X(5), 31, 0.9, '#555');
+    R(12.5, 16, 14, 12, C.can, { stroke: '#7d858c' });                                         // motor can (visible part)
+    R(16, 24.5, 13.5, 13, C.enc, { stroke: '#123150' });                                       // encoder board
+    s.circle(X(20.25), 20, 3.2, '#3b3b3b');                                                     // magnet disc
+    R(17.2, 23.3, 16.4, 7.2, C.black, { stroke: '#000' });                                     // 6-pin plug on top
+    s.text(X(20.25), 20.6, '6-pin', { size: 1.2, fill: '#fff' });
+    s.text(X(5.5), 21, 'bracket', { size: 1.5, fill: C.ink2 });
+  }
+  motor(1); motor(-1);
+  cableUp(s, cx(5) - 1.2, cx(16) + 1.2, ry('N'), 'cable M (10 wires) → J0 on the power board');
+  dim(s, 24.5, 35.5, 9.5, '≈ 11 mm free');
+  s.text(30, 6, 'gap between the encoders', { size: 1.5, fill: C.ink2 });
+  s.text(-3.5, 14, 'gearbox', { size: 1.4, fill: C.ink2 });
+  s.text(14.25, 12.8, 'motor', { size: 1.4, fill: C.ink2 });
+  s.text(20.25, 12.4, 'encoder', { size: 1.4, fill: C.ink2 });
+  s.text(30, 46.5, 'seen from above · front of the robot is down in every drawing (row N)', { size: 1.7, fill: C.ink2 });
+})();
+
+// ---------- Board 1: power board ----------
+(function () {
+  const vb = [-8, -8, 74, 56]; const s = svg('d0u', vb); grid(s, vb); board(s);
+  function buck(y, name, volts, feeds) {
+    s.rect(4.9, y - 0.6, 23.2, 18.2, 'none', { stroke: '#ff8a3d', sw: 0.6, rx: 0.8 });
+    s.rect(5.5, y, 22, 17, '#2f9e4f', { stroke: '#165a2b' });
+    s.rect(14, y + 2.5, 6, 6, '#3a3a3a', { rx: 0.4 }); s.text(17, y + 5.9, 'coil', { size: 0.9, fill: '#bbb' });
+    s.circle(22, y + 12.5, 1.4, '#e6e6e6', { stroke: '#666' }); s.text(22, y + 15.4, 'trim', { size: 0.9, fill: '#fff' });
+    for (const [lx, ly, lab] of [[7.3, y + 2, 'IN+'], [7.3, y + 15, 'IN−'], [25.7, y + 2, 'OUT+'], [25.7, y + 15, 'OUT−']]) { s.circle(lx, ly, 0.9, C.pinUsed, { stroke: '#555', sw: 0.2 }); s.text(lx + (lx < 15 ? 2.3 : -2.9), ly + 0.5, lab, { size: 1, fill: '#fff', mono: true }); }
+    s.text(12, y + 11.2, name, { size: 1.5, fill: '#fff', bold: true }); s.text(12, y + 13.2, volts + ' → ' + feeds, { size: 1.1, fill: '#fff', bold: true });
+  }
+  buck(3.2, 'MP1584 #1', '6.0 V', 'motors'); buck(21.4, 'MP1584 #2', '5.0 V', 'logic');
+  // TB6612 module, headers in rows D and J (6 pitches apart), columns 12..19
+  s.rect(cx(11.5) - 0.3, ry('C') + 0.6, cx(19.5) - cx(11.5) + 0.6, ry('K') - ry('C') - 1.2, C.tb, { stroke: '#7d1d18' });
+  s.rect(cx(14.6), ry('F') - 0.6, 5.5, 4.2, '#222'); s.text(cx(15.7), ry('H') + 0.6, 'TB6612FNG', { size: 1.4, fill: '#fff', bold: true });
+  pinsRow(s, 12, 'D', ['PWMA', 'AIN2', 'AIN1', 'STBY', 'BIN1', 'BIN2', 'PWMB', 'GND'], ['PWMA', 'AIN2', 'AIN1', 'STBY', 'BIN1', 'BIN2', 'PWMB', 'GND'], { below: true });
+  pinsRow(s, 12, 'J', ['VM', 'VCC', 'GND', 'AO1', 'AO2', 'BO2', 'BO1', 'GND'], ['VM', 'VCC', 'GND', 'AO1', 'AO2', 'BO2', 'BO1']);
+  // reused 10 uF capacitor across VM and GND, right next to the module
+  s.circle(30.3, ry('L') - 0.2, 1.6, '#1d2f6b', { stroke: '#0c1533', sw: 0.25 }); s.text(30.3, ry('L') + 0.2, '10µF', { size: 0.8, fill: '#fff', bold: true });
+  s.line([[cx(12), ry('J') + 0.9], [cx(12), ry('K') + 0.3], [31.4, ry('L') - 1.4]], C.wireR, 0.4);
+  s.line([[cx(14), ry('J') + 0.9], [cx(14), ry('L') + 1.4], [31.2, ry('L') + 1]], C.wireK, 0.4);
+  connH(s, 11, 'N', J0, 'J0 ← M');
+  cableUp(s, cx(11) - 1.2, cx(20) + 1.2, ry('A'), 'cable P (14) → J1 logic');
+  s.text(30, 44.5, 'seen from above · front of the robot is down (row N)', { size: 1.5, fill: C.ink2 });
+})();
+// ---------- Layer 1: Pro Mini + MPU6050 ----------
+(function () {
+  const vb = [-6, -8, 74, 56]; const s = svg('d1', vb); grid(s, vb); board(s);
+  // Pro Mini 5 V / 16 MHz: pins in columns 13 and 19 (0.6"), rows B..M, programming header at the top edge
+  s.rect(cx(13) - 1.4, ry('B') - 4.3, cx(19) - cx(13) + 2.8, ry('M') - ry('B') + 5.6, C.nano, { stroke: '#0f3a6b' });
+  s.rect(42, 16.8, 5, 5, '#1a1a1a', { rx: 0.3 }); s.text(44.5, 23.6, 'ATmega328P', { size: 0.9, fill: '#fff' });
+  s.text(44.5, 27.6, 'Pro Mini', { size: 1.5, fill: '#fff', bold: true }); s.text(44.5, 29.4, '5 V / 16 MHz', { size: 1, fill: '#fff' });
+  const used = ['TXO', 'RXI', 'GND', 'VCC', '2', '3', '4', '5', '6', '7', '8', '9', '10', '12', 'A0', 'A1', 'A4', 'A5'];
+  function pinsCol(c, labels, right) {
+    labels.forEach((lab, i) => { const x = cx(c), y = ry(i + 1), u = used.includes(lab);
+      s.circle(x, y, 0.95, u ? C.pinUsed : '#d8d8d8', { stroke: '#555', sw: 0.2 });
+      s.text(x + (right ? -1.6 : 1.6), y + 0.4, lab, { size: 1.05, fill: '#fff', mono: true, bold: u, anchor: right ? 'end' : 'start' }); });
+  }
+  pinsCol(13, ['TXO', 'RXI', 'RST', 'GND', '2', '3', '4', '5', '6', '7', '8', '9'], false);
+  pinsCol(19, ['RAW', 'GND', 'RST', 'VCC', 'A3', 'A2', 'A1', 'A0', '13', '12', '11', '10'], true);
+  // A4 / A5 sit on inner pads
+  for (const [x, lab] of [[cx(15.3), 'A4'], [cx(16.7), 'A5']]) { s.circle(x, ry('L'), 0.8, C.pinUsed, { stroke: '#555', sw: 0.2 }); s.text(x, ry('L') + 2.4, lab, { size: 1, fill: '#fff', mono: true, bold: true }); }
+  // programming header for the USB-serial adapter
+  ['GND', 'GND', 'VCC', 'RXI', 'TXO', 'DTR'].forEach((lab, i) => { const x = cx(13.5) + i * P, y = ry('B') - 3.2;
+    s.circle(x, y, 0.75, '#d8d8d8', { stroke: '#555', sw: 0.2 }); s.text(x, y - 1.2, lab, { size: 0.8, fill: C.ink, mono: true }); });
+  s.text(44.7, -2.4, 'USB-serial adapter plugs in here', { size: 1.2, fill: C.ink2 });
+  // MPU6050 GY-521: header row F, columns 2..9, body above it
+  s.rect(7.1, 1.9, 20.3, 15.6, C.mpu, { stroke: '#18295a' });
+  s.rect(14.8, 6.2, 4, 4, '#111', { rx: 0.2 }); s.text(17.2, 4.4, 'GY-521 MPU6050', { size: 1.5, fill: '#fff', bold: true });
+  pinsRow(s, 2, 'F', ['VCC', 'GND', 'SCL', 'SDA', 'XDA', 'XCL', 'AD0', 'INT'], ['VCC', 'GND', 'SCL', 'SDA'], { below: false });
+  // axis arrows: X now forward (up in the drawing), Y along the axle
+  s.line([[24.5, 8], [24.5, 12.5]], '#fff', 0.35); s.line([[23.7, 11.5], [24.5, 12.5], [25.3, 11.5]], '#fff', 0.35); s.text(25.8, 12.4, 'X', { size: 1.4, fill: '#fff' });
+  s.line([[24.5, 8], [20, 8]], '#fff', 0.35); s.line([[21, 7.2], [20, 8], [21, 8.8]], '#fff', 0.35); s.text(19.4, 8.4, 'Y', { size: 1.4, fill: '#fff' });
+  connV(s, 11, 'A', J1, 'J1 ← P', 'r');
+  cableUp(s, cx(2) - 0.5, cx(9) + 0.5, ry('K'), 'cable L (8 wires) → J2 on the top board');
+  s.text(30, 44.5, 'seen from above · front of the robot is down (row N); MPU X axis points forward', { size: 1.6, fill: C.ink2 });
+})();
+
+// ---------- Layer 2 underside: ultrasonic ----------
+(function () {
+  const vb = [-6, -8, 72, 62]; const s = svg('d2u', vb); grid(s, vb); board(s);
+  // header row N, columns 9..12, sensor hangs past the front edge
+  s.rect(cx(9) - 1.3, ry('N') - 1.3, 4 * P, 2.6, '#333');
+  pinsRow(s, 9, 'N', ['VCC', 'TRIG', 'ECHO', 'GND'], ['VCC', 'TRIG', 'ECHO', 'GND']);
+  s.rect(12, 38.6, 36, 1.6, '#3e6e46');
+  s.rect(15, 40.2, 13, 8, '#cfcfcf', { stroke: '#888' }); s.rect(32, 40.2, 13, 8, '#cfcfcf', { stroke: '#888' });
+  s.text(30, 51.5, 'HC-SR04 hangs under the front edge, facing forward', { size: 1.5, fill: C.ink2 });
+  // reserved slot for the HC-05 (ZS-040), about 37 x 16 mm, module not fitted yet
+  // HC-05 on its ZS-040 carrier, drawn semi-transparent because it is not fitted yet
+  s.rect(38.5, 1.5, 16, 37, '#2a63c4', { op: 0.55, stroke: C.label, dash: '0.8 0.6', sw: 0.35 });
+  s.rect(39.6, 2.5, 13.8, 21, '#1d3f80', { op: 0.7, rx: 0.3 });                 // HC-05 core module
+  s.line([[41, 4], [52, 4], [52, 6], [41, 6], [41, 8], [52, 8]], '#e2c044', 0.35);    // PCB antenna
+  s.rect(43, 12, 6, 6, '#111', { op: 0.8, rx: 0.2 });
+  s.text(46.5, 20.6, 'HC-05', { size: 1.6, fill: '#fff', bold: true });
+  s.text(46.5, 26.6, 'ZS-040', { size: 1.3, fill: '#fff' });
+  s.text(46.5, 28.6, 'not fitted yet', { size: 1.1, fill: '#fff' });
+  s.rect(50.5, 29.6, 3, 2.4, '#e6e6e6', { stroke: '#666' }); s.text(52, 33.6, 'button', { size: 0.9, fill: '#fff' });
+  ['STATE', 'RXD', 'TXD', 'GND', 'VCC', 'EN'].forEach((lab, i) => {
+    const x = 40.1 + i * 2.54, y = 36.4, u = ['RXD', 'TXD', 'GND', 'VCC'].includes(lab);
+    s.circle(x, y, 0.85, u ? C.pinUsed : '#d8d8d8', { stroke: '#555', sw: 0.2 });
+    s.text(x, y - 1.5, lab, { size: 0.75, fill: '#fff', mono: true, bold: u });
+  });
+  s.text(46.5, -0.8, 'HC-05 · short cable to the 4-pin socket', { size: 1.1, fill: C.ink2 });
+  connV(s, 13, 'A', J2, 'J2 ← L', 'l');
+  // 1k / 2k divider for the HC-05 RXD, next to its socket
+  for (const [y, lab] of [[ry('K'), '1k'], [ry('L') + 0.6, '2k']]) { s.rect(cx(4.5), y - 0.8, 5, 1.6, '#d8c39a', { stroke: '#7a6a45', sw: 0.2, rx: 0.6 }); s.text(cx(4.5) + 2.5, y + 0.4, lab, { size: 1, bold: true }); }
+  s.text(cx(5.5), ry('I') + 0.6, 'HC-05 divider', { size: 1.1, fill: C.label });
+  s.rect(cx(9) - 1.3, ry('K') - 1.3, 4 * P, 2.6, '#333');
+  pinsRow(s, 9, 'K', ['5V', 'GND', 'D0', 'D1'], ['5V', 'GND', 'D0', 'D1'], { below: true });
+  s.text(cx(10.5), ry('I') + 0.6, 'HC-05 socket', { size: 1.1, fill: C.label });
+})();
+
+// ---------- Layer 2 top: 2 x 18650 holder, series ----------
+(function () {
+  const vb = [-14, -10, 100, 62]; const s = svg('d2', vb); grid(s, vb); board(s);
+  s.rect(-8.5, -0.5, 77, 41, '#262626', { rx: 1 });
+  function cell(y, plusRight) {
+    s.rect(-6.5, y, 73, 17.5, '#4d4d4d', { rx: 0.5 });
+    s.rect(-1, y + 1.2, 61, 15, '#cbe86b', { rx: 0.3 });
+    s.text(29.5, y + 9.6, 'NCR18650B  3.7 V', { size: 2.4, bold: true });
+    s.text(plusRight ? 56 : 3, y + 10, '+', { size: 3.4, bold: true }); s.text(plusRight ? 3 : 56, y + 10, '−', { size: 3.4, bold: true });
+  }
+  cell(1.2, true); cell(21.3, false);
+  // series link at the right end: + of cell 1 to − of cell 2
+  s.line([[67, 10], [67, 30]], '#c0c0c0', 1.1); s.text(71.5, 21, 'series link', { size: 1.4, fill: C.ink2, anchor: 'start' });
+  // leads at the left end: − of cell 1 (black), + of cell 2 (red) through the switch
+  s.line([[-8.5, 10], [-12, 10], [-12, 46]], C.wireK, 0.7);
+  s.line([[-8.5, 30], [-10, 30], [-10, 40]], C.wireR, 0.7);
+  s.rect(-12, 40, 5, 4, '#fafafa', { stroke: '#888' }); s.rect(-10.4, 40.8, 1.6, 2.4, '#4a62c9');
+  s.line([[-9.6, 44], [-9.6, 48]], C.wireR, 0.7);
+  s.text(-4.5, 47.5, 'switch in the red lead', { size: 1.4, fill: C.ink2, anchor: 'start' });
+  s.text(-4.5, 50, '7.4 V nominal · 8.4 V full · 6.4 V stop', { size: 1.4, fill: C.ink2, anchor: 'start' });
+})();
+
+// ---------- circuit diagram ----------
+(function () {
+  const vb = [0, 0, 205, 116]; const s = svg('dc', vb);
+  s.rect(0, 0, 205, 116, '#ffffff', { rx: 0 });
+  function block(x, y, w, h, fill, title, pins, side) {
+    s.rect(x, y, w, h, fill, { stroke: '#2c3a46', sw: 0.35, rx: 0.8 });
+    s.text(x + w / 2, y + 4.2, title, { size: 2.6, bold: true });
+    const out = {};
+    pins.forEach((p, i) => { const py = y + 8 + i * 3.4; const px = side === 'r' ? x + w : x;
+      s.text(side === 'r' ? px - 1.2 : px + 1.2, py + 0.7, p, { size: 1.6, anchor: side === 'r' ? 'end' : 'start', mono: true });
+      out[p] = [px, py]; });
+    return out;
+  }
+  const R = (pts) => s.line(pts, C.wireR, 0.5), K = (pts) => s.line(pts, C.wireK, 0.5), B = (pts) => s.line(pts, C.wireB, 0.4), G = (pts) => s.line(pts, C.wireG, 0.4);
+  const bat = block(4, 40, 26, 18, '#f3e3a1', '2 × 18650 (series)', ['+ 7.4 V', '−'], 'r');
+  s.text(17, 61.6, '6.4–8.4 V', { size: 1.6, fill: C.ink2 });
+  // switch symbol on the + lead
+  R([bat['+ 7.4 V'], [36, 48]]); s.line([[36, 48], [41, 45.5]], C.ink, 0.45); s.circle(36, 48, 0.6, C.ink); s.circle(41.5, 48, 0.6, C.ink); s.text(38.7, 43.8, 'switch', { size: 1.5 });
+  const nano = block(84, 30, 30, 62, '#cfe0f5', 'Arduino Pro Mini', ['VCC 5V', 'GND', 'A4 SDA', 'A5 SCL', 'D2', 'A0', 'D3', 'A1', 'D6', 'D7', 'D8', 'D5', 'D4', 'D12', 'D9', 'D10'], 'r');
+  const nanoL = { VCC: [84, 38], GND: [84, 41.4] };
+  s.text(85.2, 38.7, 'VCC', { size: 1.6, anchor: 'start', mono: true }); s.text(85.2, 59.5, 'D0 RXI', { size: 1.6, anchor: 'start', mono: true }); s.text(85.2, 62.9, 'D1 TXO', { size: 1.6, anchor: 'start', mono: true }); s.text(85.2, 42.1, 'GND', { size: 1.6, anchor: 'start', mono: true });
+  const tb = block(136, 30, 26, 44, '#f5c9c4', 'TB6612FNG', ['PWMA', 'AIN1', 'AIN2', 'PWMB', 'BIN1', 'BIN2', 'STBY', 'VCC', 'VM', 'GND'], 'l');
+  const tbR = { AO1: [162, 38], AO2: [162, 41.4], BO1: [162, 52], BO2: [162, 55.4] };
+  for (const [k, v] of Object.entries(tbR)) s.text(160.8, v[1] + 0.7, k, { size: 1.6, anchor: 'end', mono: true });
+  const ml = block(172, 30, 24, 15, '#dfe7d3', 'LEFT motor', ['M1', 'M2'], 'l');
+  const mr = block(172, 46, 24, 15, '#dfe7d3', 'RIGHT motor', ['M1', 'M2'], 'l');
+  const el = block(172, 66, 24, 18, '#d6eadf', 'LEFT encoder', ['A', 'B'], 'l');
+  const er = block(172, 87, 24, 18, '#d6eadf', 'RIGHT encoder', ['A', 'B'], 'l');
+  // encoder power pins on the right side of each block
+  const elP = { VCC: [196, 74], GND: [196, 77.4] }, erP = { VCC: [196, 95], GND: [196, 98.4] };
+  for (const p of [elP, erP]) { s.text(194.8, p.VCC[1] + 0.7, 'VCC', { size: 1.6, anchor: 'end', mono: true }); s.text(194.8, p.GND[1] + 0.7, 'GND', { size: 1.6, anchor: 'end', mono: true }); }
+  const mpu = block(50, 94, 26, 15, '#dbe2f5', 'MPU6050', ['SDA', 'SCL'], 'r');
+  const us = block(140, 2, 26, 23, '#d8eccd', 'HC-SR04', ['VCC', 'TRIG', 'ECHO', 'GND'], 'l');
+  // battery + (after switch) -> MP1584 #1 (motors) and MP1584 #2 (logic), separate wires
+  R([[41.5, 48], [60, 48]]);
+  const buck = block(80, 4, 24, 16, '#f5c9c4', 'MP1584 #1', ['IN+', 'IN−'], 'l');
+  s.text(102.8, 12.7, 'OUT+', { size: 1.6, anchor: 'end', mono: true }); s.text(102.8, 16.1, 'OUT−', { size: 1.6, anchor: 'end', mono: true });
+  s.text(92, 22.8, 'set to 6.0 V', { size: 1.5, fill: C.ink2 });
+  R([[60, 48], [60, buck['IN+'][1]], buck['IN+']]);
+  const buck2 = block(6, 64, 24, 21, '#f5c9c4', 'MP1584 #2', ['IN+', 'IN−', 'OUT+', 'OUT−'], 'r');
+  s.text(18, 88.5, 'set to 5.0 V', { size: 1.5, fill: C.ink2 });
+  R([[44, 48], [44, buck2['IN+'][1]], buck2['IN+']]);
+  K([buck2['IN−'], [64, buck2['IN−'][1]]]);
+  R([buck2['OUT+'], [70, buck2['OUT+'][1]], [70, 38], nanoL.VCC]); s.text(56, 77.6, '5.0 V logic', { size: 1.5, fill: C.wireR });
+  K([buck2['OUT−'], [64, buck2['OUT−'][1]]]);
+  R([[104, 12], [110, 12], [110, 22], [133.6, 22], [133.6, tb.VM[1]], tb.VM]); s.text(124, 20.8, '6.0 V motors', { size: 1.5, fill: C.wireR });
+  // 10 uF capacitor across VM and GND at the TB6612
+  R([[133.6, tb.VM[1]], [133.6, tb.VM[1] + 0.9]]);
+  s.line([[132.3, tb.VM[1] + 0.9], [134.9, tb.VM[1] + 0.9]], C.ink, 0.45); s.line([[132.3, tb.VM[1] + 1.8], [134.9, tb.VM[1] + 1.8]], C.ink, 0.45);
+  K([[133.6, tb.VM[1] + 1.8], [133.6, tb.GND[1]], tb.GND]);
+  s.text(131.8, tb.VM[1] + 2.2, '10 µF', { size: 1.4, anchor: 'end' });
+  K([buck['IN−'], [64, buck['IN−'][1]], [64, 41.4]]);
+  K([[104, 15.4], [106.5, 15.4], [106.5, 19], [66, 19], [66, 15.4]]);
+  // ground
+  K([bat['−'], [64, 51.4], [64, 41.4], nanoL.GND]); K([[64, 51.4], [64, 110], [134, 110], [134, tb.GND[1]], tb.GND]);
+  // Pro Mini 5V -> logic
+  const v5 = nano['VCC 5V'];
+  R([v5, [118, v5[1]], [118, tb.VCC[1]], tb.VCC]); R([[118, tb.VCC[1]], [118, tb.STBY[1]], tb.STBY]);
+  s.text(117, 28.4, '5 V logic', { size: 1.5, fill: C.wireR, anchor: 'end' });
+  const nb = (p) => nano[p];
+  const route = (from, to, xmid, col) => col([from, [xmid, from[1]], [xmid, to[1]], to]);
+  route(nb('D6'), tb.PWMA, 122, B); route(nb('D7'), tb.AIN1, 124, B); route(nb('D8'), tb.AIN2, 126, B);
+  route(nb('D5'), tb.PWMB, 128, G); route(nb('D4'), tb.BIN1, 130.5, G); route(nb('D12'), tb.BIN2, 132.5, G);
+  s.line([tbR.AO1, [167, 38], [167, ml.M1[1]], ml.M1], '#8a4fd1', 0.4); s.line([tbR.AO2, [169, 41.4], [169, ml.M2[1]], ml.M2], '#8a4fd1', 0.4);
+  s.line([tbR.BO1, [167, 52], [167, mr.M1[1]], mr.M1], '#8a4fd1', 0.4); s.line([tbR.BO2, [169, 55.4], [169, mr.M2[1]], mr.M2], '#8a4fd1', 0.4);
+  B([nb('D2'), [118.8, nb('D2')[1]], [118.8, 96], [166, 96], [166, el.A[1]], el.A]);
+  B([nb('A0'), [116, nb('A0')[1]], [116, 98], [164, 98], [164, el.B[1]], el.B]);
+  G([nb('D3'), [120, nb('D3')[1]], [120, 102], [168.5, 102], [168.5, er.A[1]], er.A]);
+  G([nb('A1'), [115, nb('A1')[1]], [115, 104], [170, 104], [170, er.B[1]], er.B]);
+  // encoder VCC -> 5 V logic rail (over the top to the rail at x 118), GND -> common ground
+  R([elP.VCC, [199, elP.VCC[1]]]); R([erP.VCC, [199, erP.VCC[1]], [199, 1.2], [118, 1.2], [118, 10]]);
+  K([elP.GND, [202, elP.GND[1]]]); K([erP.GND, [202, erP.GND[1]], [202, 113.5], [135, 113.5], [135, 110]]);
+  s.text(200.5, 60, 'encoder 5 V', { size: 1.4, fill: C.wireR, rot: -90 }); s.text(203.6, 92, 'encoder GND', { size: 1.4, fill: C.ink2, rot: -90 });
+  B([nb('A4 SDA'), [116.5, nb('A4 SDA')[1]], [116.5, 27], [80, 27], [80, mpu.SDA[1]], mpu.SDA]);
+  B([nb('A5 SCL'), [117.5, nb('A5 SCL')[1]], [117.5, 26], [78, 26], [78, mpu.SCL[1]], mpu.SCL]);
+  s.text(63, 111.5, 'MPU VCC → 5 V logic · INT not connected', { size: 1.5, fill: C.ink2 });
+  route(nb('D9'), us.TRIG, 119.4, B); route(nb('D10'), us.ECHO, 121, B);
+  R([[118, v5[1]], [118, us.VCC[1]], us.VCC]);
+  K([us.GND, [135, us.GND[1]], [135, 110], [134, 110]]);
+  s.text(150, 112.5, 'All GNDs connected together', { size: 1.7, bold: true });
+  // HC-05 (ZS-040), reserved: socket wired, module not fitted
+  s.rect(6, 4, 28, 22, '#eef0f2', { stroke: '#7b8790', sw: 0.35, rx: 0.8, dash: '1 0.6' });
+  s.text(20, 8.2, 'HC-05 (reserved)', { size: 2.2, bold: true });
+  const hc = {};
+  ['VCC', 'GND', 'TXD', 'RXD'].forEach((p, i) => { const py = 12 + i * 3.4; s.text(32.8, py + 0.7, p, { size: 1.6, anchor: 'end', mono: true }); hc[p] = [34, py]; });
+  const D = (pts) => s.line(pts, '#7b8790', 0.4, { dash: '1 0.6' });
+  D([hc.TXD, [52, hc.TXD[1]], [52, 58.8], [84, 58.8]]);
+  // RXD through the 1k / 2k voltage divider: D1 (5 V) -> 1k -> node -> RXD, node -> 2k -> GND (about 3.3 V at RXD)
+  const ry2 = hc.RXD[1];
+  D([hc.RXD, [39, ry2]]); s.rect(39, ry2 - 1, 6, 2, '#f3ead6', { stroke: '#7a6a45', sw: 0.3, rx: 0.3 }); s.text(42, ry2 - 1.5, '1k', { size: 1.4, bold: true });
+  D([[45, ry2], [54, ry2], [54, 62.2], [84, 62.2]]); s.circle(48, ry2, 0.55, '#7b8790');
+  D([[48, ry2], [48, ry2 + 2.3]]); s.rect(47, ry2 + 2.3, 2, 5, '#f3ead6', { stroke: '#7a6a45', sw: 0.3, rx: 0.3 }); s.text(50, ry2 + 5.3, '2k', { size: 1.4, bold: true, anchor: 'start' });
+  D([[48, ry2 + 7.3], [48, ry2 + 9.3]]);
+  s.line([[46, ry2 + 9.3], [50, ry2 + 9.3]], '#7b8790', 0.4); s.line([[46.8, ry2 + 10.1], [49.2, ry2 + 10.1]], '#7b8790', 0.4); s.line([[47.6, ry2 + 10.9], [48.4, ry2 + 10.9]], '#7b8790', 0.4);
+  s.text(48, ry2 + 13, 'GND', { size: 1.2, fill: C.ink2 });
+  D([hc.VCC, [56, hc.VCC[1]], [56, 35], [70, 35], [70, 38]]);   // VCC to the 5 V logic rail
+  D([hc.GND, [64, hc.GND[1]]]);                                  // GND to the common ground
+  s.text(20, 29, 'divider: 5 V from D1 → 3.3 V at RXD', { size: 1.3, fill: C.ink2 });
+  s.text(20, 31.2, 'dashed = wired to the socket, module not fitted yet', { size: 1.3, fill: C.ink2 });
+})();
+
+// ---------- wiring table ----------
+(function () {
+  const rows = [
+    ['power', 'Battery + (7.4 V, through switch)', 'MP1584 #1 IN+ and MP1584 #2 IN+ (separate wires)', '#d0312d'],
+    ['power', 'MP1584 #1 OUT+ (set to 6.0 V)', 'TB6612 VM', '#d0312d'],
+    ['power', 'MP1584 #2 OUT+ (set to 5.0 V)', 'Pro Mini VCC (not RAW) = 5 V logic rail', '#d0312d'],
+    ['power', '5 V logic rail', 'MPU VCC, TB6612 VCC, TB6612 STBY, both encoder VCC, HC-SR04 VCC', '#d0312d'],
+    ['power', 'Battery −, all IN− / OUT− / GND', 'common ground, star-wired: motor side (MP1584 #1, TB6612) and logic side (MP1584 #2, Pro Mini) each with its own wire to battery −', '#222'],
+    ['power', '10 µF capacitor (reused)', 'across TB6612 VM (+) and GND (−), at the module', '#d0312d'],
+    ['left motor', 'Pro Mini D6', 'TB6612 PWMA', '#1f5fd1'], ['left motor', 'Pro Mini D7', 'TB6612 AIN1', '#1f5fd1'], ['left motor', 'Pro Mini D8', 'TB6612 AIN2', '#1f5fd1'],
+    ['left motor', 'TB6612 AO1, AO2', 'left motor M1, M2', '#8a4fd1'],
+    ['right motor', 'Pro Mini D5', 'TB6612 PWMB', '#2e9e44'], ['right motor', 'Pro Mini D4', 'TB6612 BIN1', '#2e9e44'], ['right motor', 'Pro Mini D12', 'TB6612 BIN2', '#2e9e44'],
+    ['right motor', 'TB6612 BO1, BO2', 'right motor M1, M2', '#8a4fd1'],
+    ['encoders', 'Left encoder A / B', 'Pro Mini D2 (interrupt) / A0', '#1f5fd1'],
+    ['encoders', 'Right encoder A / B', 'Pro Mini D3 (interrupt) / A1', '#2e9e44'],
+    ['sensor', 'MPU6050 SDA / SCL', 'Pro Mini A4 / A5', '#1f5fd1'],
+    ['sensor', 'MPU6050 INT', 'not connected (D2 is now the left encoder)', '#7b8790'],
+    ['bluetooth (reserved)', '5 V rail, GND, Pro Mini D0 (RXI), D1 (TXO)', '4-pin socket on the top board underside, HC-05 not fitted yet', '#7b8790'],
+    ['ultrasonic', 'HC-SR04 VCC / GND', '5 V logic rail / common ground', '#d0312d'],
+    ['ultrasonic', 'HC-SR04 TRIG / ECHO', 'Pro Mini D9 / D10 (ECHO moved from D8)', '#1f5fd1'],
+  ];
+  document.getElementById('wires').innerHTML = '<tr><th>Group</th><th>From</th><th>To</th></tr>' +
+    rows.map(r => `<tr><td>${r[0]}</td><td class="mono"><span class="sw" style="background:${r[3]}"></span>${r[1]}</td><td class="mono">${r[2]}</td></tr>`).join('');
+})();
+</script>
+</body>
+</html>
