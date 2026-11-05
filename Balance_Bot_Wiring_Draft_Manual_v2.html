@@ -84,7 +84,10 @@ footer{color:var(--ink-2);font-size:.9em;border-top:1px solid var(--line);paddin
 </header>
 
 <div class="review">
-  <h2>Draft for approval: wiring drawings, 3 Nov 2026</h2>
+  <h2>Draft for approval: wiring drawings and color code, 4 Nov 2026</h2>
+  <p class="note"><b>Robot color code: one meaning per color on every wire you add, on every board:</b> red = battery + / 6 V · orange = 5 V · black = GND · white = channel 1: motor M1 (AO1, BO1) and its direction input IN1 (AIN1 D7, BIN1 D4) · brown = channel 2: motor M2 (AO2, BO2) and IN2 (AIN2 D8, BIN2 D12) · purple = speed PWM (PWMA D6, PWMB D5) · green = encoder C1 (D2, D3) · yellow = encoder C2 (A0, A1) · grey = battery sense (VB → A6) · blue = sensors and serial (I2C, HC-SR04, HC-05, programming). White, green and yellow match the motor cable. Brown takes M2, because red is kept for the battery.</p>
+  <p class="note"><b>The six TB6612 control wires are now told apart:</b> each motor channel is purple PWM · white IN1 · brown IN2, so IN1 shares white with the M1 output it drives and IN2 shares brown with M2. Left (A) and right (B) use the same three colors and never mix: on board 2 the A wires land in C11–C13 and the B wires in C15–C17, with the orange 5V between them. On JC the A wires are in row B and the B wires in row A. On board 3 each goes to its own Pro Mini pin.</p>
+  <p class="note" style="color:var(--warn)"><b>Exception: the motors' own 6-wire cables keep the maker's colors:</b> white M1 · blue GND · green C1 · yellow C2 · black VCC (5 V) · red M2. On this cable only, blue is GND, black is 5 V and red is M2. They end on board 0; from there on every wire follows the code above. The circuit diagram, the wiring table and all drawings now use these colors.</p>
   <p class="note">Eleven new drawings: board 0 top (with both cable ends) and underside (phase 03); board 2 connectors and cables, top and underside (phase 05); board 3 connectors, sockets and cables, top and four underside views (phase 06). MALE pins are drawn as gold squares on black, FEMALE contacts as dark holes (Dupont housing orange, socket black, JST white), every pin numbered with its signal; each cable is drawn from the holes it is soldered into to its female end, with the hole named under every housing pin. Every wire runs hole to hole in the circuit-diagram colors. Board 1 has nothing soldered to the board itself; its holder wiring is already drawn. Nothing below is final until you approve; the same changes then go to the v2 layout page.</p>
   <ol>
     <li><b>Checked against the circuit diagram:</b> every wire's two ends against the connection table: power and star ground, all 5 V branches, battery sense, the six JC control lines (D4–D8, D12), motor outputs to J0-1…4, encoders (D2, D3, A0, A1), I2C (A4/A5), HC-SR04 (D9/D10), HC-05 and its divider. All match. An automatic check also confirms that no board 3 wire passes within 0.9 mm of a joint it doesn't belong to.</li>
@@ -378,7 +381,7 @@ const P = 2.54, X0 = 5.87, Y0 = 3.49, ROWS = 'ABCDEFGHIJKLMN';
 const cx = c => X0 + (c - 1) * P, ry = r => Y0 + (typeof r === 'string' ? ROWS.indexOf(r) : r) * P;
 const C = { board: '#4e8f55', hole: '#c9dccb', holeIn: '#3d6f43', label: '#e9e46b', ink: '#1b2329', ink2: '#5b6670',
   brass: '#c9a646', can: '#a9b1b8', enc: '#1f4e79', white: '#f7f7f5', red: '#c83a2c', nano: '#1f5fa8', mpu: '#2c4a9a',
-  mt: '#2a5db0', tb: '#c8322b', black: '#262626', pinUsed: '#ffd23f', wireR: '#d0312d', wireO: '#e07b00', wireK: '#222', wireB: '#1f5fd1', wireG: '#2e9e44', wireP: '#8a4fd1' };
+  mt: '#2a5db0', tb: '#c8322b', black: '#262626', pinUsed: '#ffd23f', wireR: '#d0312d', wireO: '#e07b00', wireK: '#222', wireB: '#1f5fd1', wireG: '#2e9e44', wireP: '#8a4fd1', wireW: '#ffffff', wireN: '#8b5a2b', wireY: '#f2c500', wireV: '#7b8790' };
 
 function svg(id, vb) {
   const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -598,7 +601,7 @@ function dim(s, x1, x2, y, label) {
   s.text(14.25, 28.8, 'motor', { size: 1.4, fill: C.ink2 });
   s.text(20.6, 28.8, 'encoder', { size: 1.4, fill: C.ink2 });
   s.text(30, 46.5, 'seen from above · front of the robot is down in every drawing (row N)', { size: 1.7, fill: C.ink2 });
-  s.text(30, 49, 'row A: cable ends · row B: motor wires (yellow) · row C: 0.1 µF across M1–M2, right motor VCC/GND (blue) · bridge each column A–B–C underneath', { size: 1.1, fill: '#c2410c' });
+  s.text(30, 49, 'row A: cable ends · row B: motor cable wires (yellow marks) · row C: 0.1 µF across M1–M2, right motor VCC/GND (blue marks) · bridge each column A–B–C underneath', { size: 1.1, fill: '#c2410c' });
 })();
 
 // JST-XH header on a board: pins along row r from column c0, pin 1 square; labels below, name to the right
@@ -787,8 +790,14 @@ const midHoles = s => { for (const x of [2.6, 57.4]) { s.circle(x, 20, 2.4, '#ef
 })();
 
 // ---------- wiring views: every wire and solder bridge, top side and underside (underside drawn see-through from above) ----------
-const WC = { R: '#d0312d', O: '#e07b00', K: '#222222', B: '#1f5fd1', G: '#2e9e44', P: '#8a4fd1', V: '#7b8790' };
-const WL = { R: '#ff9a8f', O: '#ffc069', K: '#ffffff', B: '#a8c7ff', G: '#9be8ad', P: '#ddbfff', V: '#d5dbdf' };
+// robot color code: one meaning per color on every wire you add (the motors' own factory cables keep the maker's colors)
+const WC = { R: '#d0312d', O: '#e07b00', K: '#222222', W: '#ffffff', N: '#8b5a2b', G: '#2e9e44', Y: '#f2c500', P: '#8a4fd1', B: '#1f5fd1', V: '#7b8790' };
+const WL = { R: '#ff9a8f', O: '#ffc069', K: '#ffffff', W: '#ffffff', N: '#e6c29a', G: '#9be8ad', Y: '#ffe866', P: '#ddbfff', B: '#a8c7ff', V: '#d5dbdf', X: '#ffffff' };
+const WNAME = { R: 'red', O: 'orange', K: 'black', W: 'white', N: 'brown', G: 'green', Y: 'yellow', P: 'purple', B: 'blue', V: 'grey' };
+const LIGHT = { W: 1, Y: 1 }, CASE = '#3a3a3a';
+// thin colored line with a dark casing for the light colors (white, yellow)
+function cline(s, pts, k, w) { if (LIGHT[k]) s.line(pts, CASE, w + 0.24); s.line(pts, WC[k], w); }
+const wdot = (s, x, y, r, k) => s.circle(x, y, r, WC[k], { stroke: LIGHT[k] ? CASE : '#fff', sw: 0.3 });
 const hp = (c, r) => [cx(c), ry(r)];
 function wview(id, under, vb, title) {
   const s = svg(id, vb); grid(s, vb); board(s);
@@ -803,9 +812,9 @@ function ghost(s, x, y, w, h, label, o = {}) {
 }
 function wire(s, pts, k, o = {}) {
   const w = o.w || 0.55;
-  s.line(pts, '#ffffff', w + 0.6);
+  s.line(pts, LIGHT[k] ? CASE : '#ffffff', w + (LIGHT[k] ? 0.3 : 0.6));
   s.line(pts, WC[k], w, o.dash ? { dash: '1 0.55' } : {});
-  for (const p of [pts[0], pts[pts.length - 1]]) s.circle(p[0], p[1], 0.6, WC[k], { stroke: '#fff', sw: 0.25 });
+  for (const p of [pts[0], pts[pts.length - 1]]) s.circle(p[0], p[1], 0.6, WC[k], { stroke: LIGHT[k] ? CASE : '#fff', sw: 0.25 });
 }
 function bridge(s, holes) {
   const pts = holes.map(([c, r]) => hp(c, r));
@@ -813,15 +822,23 @@ function bridge(s, holes) {
   for (const p of pts) s.circle(p[0], p[1], 0.45, '#f4f6f7', { stroke: '#4d5961', sw: 0.2 });
 }
 const wl = (s, x, y, t, k, a) => tag(s, x, y, t, { size: 0.68, fill: WL[k] || '#fff', anchor: a || 'middle', mono: true });
-function legendW(s, x, y, keys) {
-  const names = { R: 'battery + / 6 V', O: '5 V', K: 'GND', B: 'left / sensor signals', G: 'right / UART', P: 'motor', V: 'battery sense' };
-  let px = x; keys.forEach(k => { s.line([[px, y], [px + 3.5, y]], WC[k], 0.6); s.text(px + 4.3, y + 0.45, names[k], { size: 1.05, anchor: 'start' }); px += 6.6 + names[k].length * 0.62; });
+const WMEAN = { R: 'red: battery + / 6 V', O: 'orange: 5 V', K: 'black: GND', W: 'white: M1 and IN1', N: 'brown: M2 and IN2', G: 'green: encoder C1', Y: 'yellow: encoder C2', P: 'purple: PWM', B: 'blue: sensors / serial', V: 'grey: battery sense' };
+// the motors' factory cable: maker's colors, NOT the robot code (blue = GND, black = 5 V, red = M2 on this cable only)
+const PIG = { M1: 'W', GND: 'B', C1: 'G', C2: 'Y', VCC: 'K', M2: 'R' };
+function legendPig(s, x, y) {
+  s.text(x, y + 0.45, 'motor\'s own cable, maker\'s colors (not the robot code):', { size: 1.05, anchor: 'start', bold: true, fill: '#c2410c' });
+  let px = x; y += 2.2; [['M1', 'white'], ['GND', 'blue'], ['C1', 'green'], ['C2', 'yellow'], ['VCC 5V', 'black'], ['M2', 'red']].forEach(([n, c]) => {
+    const k = PIG[n.split(' ')[0]]; cline(s, [[px, y], [px + 2.6, y]], k, 0.6); const t = c + ' ' + n; s.text(px + 3.2, y + 0.45, t, { size: 1.05, anchor: 'start' }); px += 4.4 + t.length * 0.6; });
+}
+function legendW(s, x, y, keys, maxW) {
+  maxW = maxW || 74;
+  let px = x; keys.forEach(k => { const iw = 6.6 + WMEAN[k].length * 0.56; if (px > x && px + iw - 2 > x + maxW) { px = x; y += 2.3; } cline(s, [[px, y], [px + 3.5, y]], k, 0.6); s.text(px + 4.3, y + 0.45, WMEAN[k], { size: 1.05, anchor: 'start' }); px += 6.6 + WMEAN[k].length * 0.56; });
   if (keys.bridge) { s.line([[px, y], [px + 3.5, y]], '#4d5961', 1.5); s.line([[px, y], [px + 3.5, y]], '#dfe4e7', 1.0); s.text(px + 4.3, y + 0.45, 'solder bridge (bare)', { size: 1.05, anchor: 'start' }); }
 }
 
 // ---------- board 0 wiring ----------
 (function () {
-  const s = wview("w0t", false, [-8, -27, 76, 78], 'Board 0 · top side: the motor wires');
+  const s = wview("w0t", false, [-8, -27, 76, 89.5], 'Board 0 · top side: the motor wires');
   for (const m of [1, -1]) { const X = x => m > 0 ? x : 60 - x;
     ghost(s, Math.min(X(0), X(12.5)), 11.5, 12.5, 17, m > 0 ? 'left bracket' : 'right bracket', { size: 1 });
     ghost(s, Math.min(X(16), X(24.5)), 13.5, 8.5, 13, '', {});
@@ -830,7 +847,7 @@ function legendW(s, x, y, keys) {
     s.text(X(20.25), 15.5, m > 0 ? 'left encoder board' : 'right encoder board', { size: 0.75, fill: '#3b4a55', bold: true });
   }
   const PIN = ['M1', 'GND', 'C1', 'C2', 'VCC', 'M2'], py = i => 17.1 + i * 1.16;
-  const kOf = (n, m) => (n === 'M1' || n === 'M2') ? 'P' : n === 'VCC' ? 'O' : n === 'GND' ? 'K' : (m > 0 ? 'B' : 'G');
+  const kOf = n => PIG[n];
   const dest = { 1: { VCC: [2, 'B'], GND: [3, 'B'], C1: [4, 'B'], C2: [5, 'B'], M1: [14, 'B'], M2: [15, 'B'] },
                  '-1': { VCC: [2, 'C'], GND: [3, 'C'], C1: [6, 'B'], C2: [7, 'B'], M1: [18, 'B'], M2: [19, 'B'] } };
   const side = { 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 14: -1, 15: 1, 18: -1, 19: 1 };
@@ -848,13 +865,15 @@ function legendW(s, x, y, keys) {
   }
   // plug pin labels on top of the wires
   for (const m of [1, -1]) PIN.forEach((n, j) => { const i = m > 0 ? j : 5 - j, x = m > 0 ? 18.3 : 41.7;
-    s.text(x + (m > 0 ? -1.0 : 1.0), py(i) + 0.3, n, { size: 0.72, fill: '#1b2329', mono: true, bold: true, anchor: m > 0 ? 'end' : 'start' }); });
+    s.text(x + (m > 0 ? -1.0 : 1.0), py(i) + 0.3, m > 0 ? WNAME[PIG[n]] + ' ' + n : n + ' ' + WNAME[PIG[n]], { size: 0.6, fill: '#1b2329', mono: true, bold: true, anchor: m > 0 ? 'end' : 'start' }); });
   // 0.1 uF per motor in row C
   for (const c0 of [14, 18]) { s.line([hp(c0, 'C'), hp(c0 + 1, 'C')], NEW, 0.45); ccap(s, (cx(c0) + cx(c0 + 1)) / 2, ry('C')); }
   cablesBoard0(s);
   s.text(30, 44.2, 'left motor: B2 VCC · B3 GND · B4 C1 · B5 C2 · B14 M1 · B15 M2   ·   right motor: C2 VCC · C3 GND · B6 C1 · B7 C2 · B18 M1 · B19 M2', { size: 1.1, fill: C.ink });
-  s.text(30, 46.2, '0.1 µF (orange) in C14–C15 and C18–C19 · motor cables shortened to length · the right plug reads backward from above', { size: 1.1, fill: C.ink2 });
-  legendW(s, -6, 49.5, ['O', 'K', 'B', 'G', 'P']);
+  s.text(30, 46.2, '0.1 µF in C14–C15 and C18–C19 · motor cables shortened to length · the right plug reads backward from above', { size: 1.1, fill: C.ink2 });
+  s.text(30, 48.2, 'the motor cables keep the maker\'s colors · cables E and M follow the robot color code', { size: 1.05, fill: '#c2410c', bold: true });
+  legendPig(s, -6, 50.4); s.text(-6, 55.85, 'robot color code (cables E and M):', { size: 1.05, anchor: 'start', bold: true });
+  legendW(s, -6, 57.8, ['O', 'K', 'G', 'Y', 'W', 'N']);
 })();
 (function () {
   const s = wview('w0u', true, [-8, -9, 76, 56], 'Board 0 · underside: solder bridges only');
@@ -888,7 +907,7 @@ function ghosts2(s, bare) {
   s.rect(64, 6, 4, 10.5, '#ffffff', { op: 0.7, stroke: '#8f9aa3', sw: 0.3, rx: 1.6 }); s.text(69.6, 11.2, 'T3A fuse', { size: 0.9, fill: '#3b4a55', bold: true, rot: -90 });
 }
 (function () {
-  const s = wview('w2t', false, [-8, -9, 84, 62], 'Board 2 · top side: power wires (22 AWG)');
+  const s = wview('w2t', false, [-8, -9, 84, 65], 'Board 2 · top side: power wires (22 AWG)');
   ghosts2(s);
   // parts on top
   ecap(s, (cx(19) + cx(20)) / 2, ry('C'), 1.4, '100µ', { pol: 'r' });
@@ -908,10 +927,10 @@ function ghosts2(s, bare) {
   wire(s, [[25.7, 18.2], [23.0, 18.2], [23.0, 7.3], [cx(17), 7.3], hp(17, 'B')], 'K');
   wire(s, [[25.7, 36.4], [25.7, 39.1], [50.32, 39.1], [50.32, ry('D')], hp(19, 'D')], 'K');
   // cable C lands from above, each wire over its TB6612 pin; both GND wires at the star
-  [[10, 'C', 'VB', 'V'], [11, 'C', 'PWMA', 'B'], [12, 'C', 'AIN2', 'B'], [13, 'C', 'AIN1', 'B'], [14, 'C', '5V', 'O'], [15, 'C', 'BIN1', 'G'], [16, 'C', 'BIN2', 'G'], [17, 'C', 'PWMB', 'G'], [18, 'B', 'GND', 'K'], [19, 'B', 'GND', 'K']]
-    .forEach(([c, r, t, k]) => s.circle(cx(c), ry(r), 0.75, WC[k], { stroke: '#fff', sw: 0.3 }));
+  [[10, 'C', 'VB', 'V'], [11, 'C', 'PWMA', 'P'], [12, 'C', 'AIN2', 'N'], [13, 'C', 'AIN1', 'W'], [14, 'C', '5V', 'O'], [15, 'C', 'BIN1', 'W'], [16, 'C', 'BIN2', 'N'], [17, 'C', 'PWMB', 'P'], [18, 'B', 'GND', 'K'], [19, 'B', 'GND', 'K']]
+    .forEach(([c, r, t, k]) => wdot(s, cx(c), ry(r), 0.75, k));
   s.circle(cx(19), ry('A'), 0.9, '#222', { stroke: NEW, sw: 0.4 }); wl(s, cx(19) + 1.4, ry('A') + 0.3, 'star', 'K', 'start');
-  ['L-M1', 'L-M2', 'R-M1', 'R-M2'].forEach((t, i) => s.circle(cx(11 + i), ry('A'), 0.7, WC.P, { stroke: '#fff', sw: 0.3 }));
+  ['W', 'N', 'W', 'N'].forEach((k, i) => wdot(s, cx(11 + i), ry('A'), 0.7, k));
   s.circle(cx(17), ry('A'), 0.7, WC.R, { stroke: '#fff', sw: 0.3 }); s.circle(cx(18), ry('A'), 0.7, WC.K, { stroke: '#fff', sw: 0.3 });
   // labels
   wl(s, 16.5, 9.2, "SW+ to #1 IN+", "R"); wl(s, 16.5, 25.9, "SW+ to #2 IN+", "R"); wl(s, 27.0, 30.6, '6 V → K10', 'R', 'end'); wl(s, cx(10) + 1.0, ry("H") - 1.2, "5 V → H10", "O", "start");
@@ -919,10 +938,10 @@ function ghosts2(s, bare) {
   s.text(30, 44.0, 'cable C lands from above, each wire over its TB6612 pin: C10 VB · C11 PWMA · C12 AIN2 · C13 AIN1 · C14 5V · C15 BIN1 · C16 BIN2 · C17 PWMB · GND ×2 in B18, B19', { size: 0.88, fill: C.ink });
   s.text(30, 46.0, 'parts: entry 100 µF C20 (+) / C19 · VM 100 µF M11 (+) / N11 with 0.1 µF M10–N10 · VCC 0.1 µF J12–J13, flat under the module · 100k N14–N17', { size: 0.88, fill: C.ink2 });
   s.text(30, 48.0, 'switch: middle lug ← fuse · top lug → I20; column 20 C–I bridged underneath = switched BAT+ bus (C20 = entry 100 µF +) · MP1584 #2 OUT+ lands in H10, cable C 5V in C14: one wire per hole', { size: 0.88, fill: C.ink2 });
-  legendW(s, -6, 51.5, ["R", "O", "K"]);
+  legendW(s, -6, 51.5, ["R", "O", "K", "P", "W", "N", "V"]);
 })();
 (function () {
-  const s = wview('w2u', true, [-8, -9, 84, 60], 'Board 2 · underside: bridges and thin wires, flat under the tape');
+  const s = wview('w2u', true, [-8, -9, 84, 63], 'Board 2 · underside: bridges and thin wires, flat under the tape');
   ghosts2(s);
   // cable C to TB6612, straight down each column
   for (let c = 11; c <= 17; c++) bridge(s, [[c, 'C'], [c, 'D'], [c, 'E']]);
@@ -935,20 +954,20 @@ function ghosts2(s, bare) {
   bridge(s, [[17, "N"], [18, "N"]]); bridge(s, [[20, "C"], [20, "D"], [20, "E"], [20, "F"], [20, "G"], [20, "H"], [20, "I"]]);
   wl(s, cx(20) + 1.3, ry("F"), "SW+ bus", "R", "start");
   // motor outputs to J0
-  wire(s, [hp(14, 'K'), [37.62, ry('K')], [37.62, 7.3], [cx(11), 7.3], hp(11, 'A')], 'P');
-  wire(s, [hp(15, 'K'), [40.16, ry('K')], [40.16, 6.6], [cx(12), 6.6], hp(12, 'A')], 'P');
-  wire(s, [hp(16, 'K'), [42.7, ry('K')], [42.7, 5.3], [cx(14), 5.3], hp(14, 'A')], 'P');
-  wire(s, [hp(17, 'K'), [45.24, ry('K')], [45.24, 4.6], [cx(13), 4.6], hp(13, 'A')], 'P');
+  wire(s, [hp(14, 'K'), [37.62, ry('K')], [37.62, 7.3], [cx(11), 7.3], hp(11, 'A')], 'W');
+  wire(s, [hp(15, 'K'), [40.16, ry('K')], [40.16, 6.6], [cx(12), 6.6], hp(12, 'A')], 'N');
+  wire(s, [hp(16, 'K'), [42.7, ry('K')], [42.7, 5.3], [cx(14), 5.3], hp(14, 'A')], 'N');
+  wire(s, [hp(17, 'K'), [45.24, ry('K')], [45.24, 4.6], [cx(13), 4.6], hp(13, 'A')], 'W');
   // 5 V to TB6612 VCC, battery sense to cable C pin 6, TB6612 GND to the star
   wire(s, [hp(14, 'E'), [cx(14), 25.1], [cx(12), 25.1], hp(12, 'J')], 'O');
   wire(s, [hp(10, "H"), [30.0, ry("H")], [30.0, ry("J")], hp(12, "J")], "O");
   wire(s, [hp(14, "N"), [cx(14), 38.6], [27.45, 38.6], [27.45, ry('C')], hp(10, 'C')], 'V');
   wire(s, [hp(18, 'E'), [50.32, ry('E')], [50.32, ry('C')], hp(19, 'C')], 'K');
-  wl(s, 37.62, 20.5, 'AO1→J0-1', 'P', 'end'); wl(s, 45.24, 20.5, 'BO1→J0-3', 'P', 'start'); wl(s, 34.0, 24.2, 'VCC', 'O'); wl(s, 27.0, 20.0, 'VB', 'V', 'end'); wl(s, 50.6, 16.0, 'TB GND', 'K', 'start');
+  wl(s, 37.62, 20.5, 'AO1→J0-1', 'W', 'end'); wl(s, 45.24, 20.5, 'BO1→J0-3', 'W', 'start'); wl(s, 34.0, 24.2, 'VCC', 'O'); wl(s, 27.0, 20.0, 'VB', 'V', 'end'); wl(s, 50.6, 16.0, 'TB GND', 'K', 'start');
   s.text(30, 44.0, 'bridges: C–D–E in columns 11–17 (cable C to the TB6612) · star block A18-A19-B17-B18-B19-C19-D19 · VM K11-K10-L10-M10-M11', { size: 0.88, fill: C.ink });
   s.text(30, 46.0, 'GND N10-N11-N12-N13 up column 13 to J13 · VCC J12-K12 · 100k N17-N18 · SW+ bus C20…I20 · never bridge N13–N14, column 19 to column 20, or C18–E18', { size: 0.88, fill: C.ink2 });
   s.text(30, 48.0, 'wires: AO1 → A11, AO2 → A12, BO1 → A13, BO2 → A14 (24 AWG) · H10 → J12 (5 V in, to VCC) · E14 → J12 (STBY and cable C 5V) · N14 → C10 (VB) · E18 → C19 (TB6612 GND to the star)', { size: 0.88, fill: C.ink2 });
-  legendW(s, -6, 51.5, ['O', 'K', 'P', 'V']);
+  legendW(s, -6, 51.5, ['O', 'K', 'W', 'N', 'V']);
 })();
 
 // ---------- board 3 wiring ----------
@@ -1059,33 +1078,33 @@ function w3(s, id, pts, k, o) { const q = pts.map(p => typeof p[1] === 'string' 
   ghosts3(s, true);
   bridge(s, [[12, 'H'], [12, 'I'], [12, 'J']]);
   // straight point-to-point: the line shows which two joints; lay the insulated wire along it
-  w3(s, id, [[2, "B"], [cx(2), 32.7], [38.9, 32.7], [38.9, ry("J")], [13, "J"]], "B");
-  w3(s, id, [[3, "B"], [cx(3), 30.16], [37.9, 30.16], [37.9, ry("K")], [13, "K"]], "B");
-  w3(s, id, [[5, "B"], [cx(5), 7.3], [40.5, 7.3], [40.5, ry("L")], [13, "L"]], "B");
-  w3(s, id, [[3, "A"], [12.22, ry("A")], [12.22, 22.54], [35.08, 22.54], [35.08, ry("I")], [13, "I"]], "G");
-  w3(s, id, [[5, "A"], [14.76, ry("A")], [14.76, 20.0], [35.08, 20.0], [35.08, ry("H")], [13, "H"]], "G");
-  w3(s, id, [[6, "A"], [cx(6), 1.6], [48.0, 1.6], [48.0, ry("K")], [19, "K"]], "G");
+  w3(s, id, [[2, "B"], [cx(2), 32.7], [38.9, 32.7], [38.9, ry("J")], [13, "J"]], "P");
+  w3(s, id, [[3, "B"], [cx(3), 30.16], [37.9, 30.16], [37.9, ry("K")], [13, "K"]], "W");
+  w3(s, id, [[5, "B"], [cx(5), 7.3], [40.5, 7.3], [40.5, ry("L")], [13, "L"]], "N");
+  w3(s, id, [[3, "A"], [12.22, ry("A")], [12.22, 22.54], [35.08, 22.54], [35.08, ry("I")], [13, "I"]], "P");
+  w3(s, id, [[5, "A"], [14.76, ry("A")], [14.76, 20.0], [35.08, 20.0], [35.08, ry("H")], [13, "H"]], "W");
+  w3(s, id, [[6, "A"], [cx(6), 1.6], [48.0, 1.6], [48.0, ry("K")], [19, "K"]], "N");
   w3(s, id, [[4, "B"], [cx(4), 8.9], [32.54, 8.9], [32.54, ry("F")], [12, "F"]], "V");
   notes3(s, ['JC → Pro Mini: PWMA (B2) → D6 · AIN1 (B3) → D7 · AIN2 (B5) → D8 · PWMB (A3) → D5 · BIN1 (A5) → D4 · BIN2 (A6) → D12',
     'battery sense: VB (B4) → F12 · 1k F12–H12 (top) · bridge H12–I12–J12 = A6 node · 33k J12–L12 (top) · 0.1 µF across the 33k joints',
-    'insulated wire; lay it along the drawn lines, between the pads'], ['B', 'G', 'V']);
+    'insulated wire; lay it along the drawn lines, between the pads'], ['P', 'W', 'N', 'V']);
 })();
 (function () {
   const id = 'w3u4', s = wview(id, true, VB3, 'Board 3 · underside 4 of 4: encoders, I2C, HC-SR04, HC-05');
   ghosts3(s, true);
   bridge(s, [[6, 'K'], [6, 'L']]); bridge(s, [[7, 'K'], [7, 'L']]); bridge(s, [[4, 'L'], [4, 'M'], [4, 'N']]);
-  w3(s, id, [[9, "A"], [27.46, ry("A")], [27.46, 2.0], [35.08, 2.0], [35.08, ry("F")], [13, "F"]], "B");
+  w3(s, id, [[9, "A"], [27.46, ry("A")], [27.46, 2.0], [35.08, 2.0], [35.08, ry("F")], [13, "F"]], "G");
   w3(s, id, [[10, "A"], [30.0, ry("A")], [30.0, 2.8], [37.62, 2.8], [37.62, ry("G")], [13, "G"]], "G");
-  w3(s, id, [[9, "B"], [cx(9), 22.54], [49.52, 22.54], [49.52, ry("I")], [19, "I"]], "B");
-  w3(s, id, [[10, "B"], [30.0, ry("B")], [30.0, 20.0], [50.32, 20.0], [50.32, ry("H")], [19, "H"]], "G");
+  w3(s, id, [[9, "B"], [cx(9), 22.54], [49.52, 22.54], [49.52, ry("I")], [19, "I"]], "Y");
+  w3(s, id, [[10, "B"], [30.0, ry("B")], [30.0, 20.0], [50.32, 20.0], [50.32, ry("H")], [19, "H"]], "Y");
   w3(s, id, [[10, "N"], [cx(10), 35.24], [35.08, 35.24], [35.08, ry("M")], [13, "M"]], "B");
   w3(s, id, [[11, "N"], [cx(11), 38.8], [cx(19), 38.8], [19, "M"]], "B");
-  w3(s, id, [[1, "F"], [7.14, ry("F")], [7.14, 1.2], [38.42, 1.2], [38.42, ry("C")], [13, "C"]], "G", { dash: true });
-  w3(s, id, [[13, "B"], [cx(13), 4.76], [17.3, 4.76], [17.3, ry("M")], [7, "M"]], "G", { dash: true });
-  w3(s, id, [[1, "E"], [cx(2), ry("E")], [cx(2), ry("L")], [4, "L"]], 'G', { dash: true });
+  w3(s, id, [[1, "F"], [7.14, ry("F")], [7.14, 1.2], [38.42, 1.2], [38.42, ry("C")], [13, "C"]], "B", { dash: true });
+  w3(s, id, [[13, "B"], [cx(13), 4.76], [17.3, 4.76], [17.3, ry("M")], [7, "M"]], "B", { dash: true });
+  w3(s, id, [[1, "E"], [cx(2), ry("E")], [cx(2), ry("L")], [4, "L"]], 'B', { dash: true });
   notes3(s, ['encoders: L-C1 (A9) → D2 · R-C1 (A10) → D3 · L-C2 (B9) → A0 · R-C2 (B10) → A1 · HC-SR04: TRIG (N10) → D9 · ECHO (N11) → D10',
     'I2C: bridges K6–L6 (SCL) and K7–L7 (SDA); the inner-pad wires land in L6/L7 from the top · HC-05 (dashed, reserved): TXD (F1) → D0 (RXI, C13)',
-    'D1 (TXO, B13) → M7 · 1k M7–M4 (top) · bridge L4–M4–N4 · RXD (E1) → L4 · 2k N4–N7 (top) · N7 to ground (underside 2)'], ['B', 'G']);
+    'D1 (TXO, B13) → M7 · 1k M7–M4 (top) · bridge L4–M4–N4 · RXD (E1) → L4 · 2k N4–N7 (top) · N7 to ground (underside 2)'], ['G', 'Y', 'B']);
 })();
 // ---------- connectors and cables: male pins (gold squares on black) vs female housings and sockets (dark holes) ----------
 // list items: { x, y, n, sig, k, ly, sub, sy }   o: { fem, jst, sock, title, tx, ty, ts, ta, pitch }
@@ -1115,26 +1134,26 @@ function legendConn(s, x, y) {
 
 // ---------- board 0: cable ends, added to the top view (w0t) ----------
 function cablesBoard0(s) {
-  const holesE = [[2, 'E5V', 'O', 1], [3, 'EGND', 'K', 2], [4, 'L-C1', 'B', 3], [5, 'L-C2', 'B', 4], [6, 'R-C1', 'G', 5], [7, 'R-C2', 'G', 6]];
-  const holesM = [[14, 'L-M1', 'P', 1], [15, 'L-M2', 'P', 2], [18, 'R-M1', 'P', 3], [19, 'R-M2', 'P', 4]];
+  const holesE = [[2, 'E5V', 'O', 1], [3, 'EGND', 'K', 2], [4, 'L-C1', 'G', 3], [5, 'L-C2', 'Y', 4], [6, 'R-C1', 'G', 5], [7, 'R-C2', 'Y', 6]];
+  const holesM = [[14, 'L-M1', 'W', 1], [15, 'L-M2', 'N', 2], [18, 'R-M1', 'W', 3], [19, 'R-M2', 'N', 4]];
   // cable E: 2x3 female, odd pins in the top row (like JE on board 3)
   const cE = n => ({ x: 11.76 + 3.0 * Math.floor((n - 1) / 2), y: n % 2 ? -17.0 : -13.0 });
-  for (const [c, sig, k, n] of holesE) { const p = cE(n); s.line([[cx(c), ry('A')], [cx(c), 0.4], [p.x + (n % 2 ? 0.75 : -0.75), -6.0], [p.x + (n % 2 ? 0.75 : -0.75), p.y + 1.3]], WC[k], 0.38); }
-  for (const [c, sig, k, n] of holesM) { const x = 40.2 + 3.0 * (n - 1); s.line([[cx(c), ry('A')], [cx(c), 0.4], [x, -6.0], [x, -12.4]], WC[k], 0.38); }
+  for (const [c, sig, k, n] of holesE) { const p = cE(n); cline(s, [[cx(c), ry('A')], [cx(c), 0.4], [p.x + (n % 2 ? 0.75 : -0.75), -6.0], [p.x + (n % 2 ? 0.75 : -0.75), p.y + 1.3]], k, 0.38); }
+  for (const [c, sig, k, n] of holesM) { const x = 40.2 + 3.0 * (n - 1); cline(s, [[cx(c), ry('A')], [cx(c), 0.4], [x, -6.0], [x, -12.4]], k, 0.38); }
   conn(s, holesE.map(([c, sig, k, n]) => { const p = cE(n); return { x: p.x, y: p.y, n, sig, k, ly: n % 2 ? p.y - 1.7 : p.y + 2.0, sub: 'A' + c, sy: n % 2 ? p.y - 2.9 : p.y + 3.2 }; }),
     { fem: true, pitch: 3.0, title: 'cable E end · FEMALE 2×3 (6 Dupont housings glued) · plugs onto JE (MALE) on board 3', ty: -23.4 });
   conn(s, holesM.map(([c, sig, k, n]) => ({ x: 40.2 + 3.0 * (n - 1), y: -13.0, n, sig, k, ly: -15.0, sub: 'A' + c, sy: -16.3 })),
     { fem: true, pitch: 3.0, title: 'cable M end · FEMALE 1×4 · plugs onto J0 (MALE) on board 2', ty: -18.4 });
-  for (const [c, sig, k] of [...holesE, ...holesM]) s.circle(cx(c), ry('A'), 0.75, WC[k], { stroke: '#fff', sw: 0.3 });
+  for (const [c, sig, k] of [...holesE, ...holesM]) wdot(s, cx(c), ry('A'), 0.75, k);
   wl(s, 30, ry('A') + 0.3, '← row A: cable wires soldered in from the top →', 'K');
 }
 
 // ---------- board 2: connectors and cables (own view) ----------
 (function () {
-  const s = wview('w2c', false, [-8, -27, 84, 75], 'Board 2 · connectors and cables');
+  const s = wview('w2c', false, [-8, -27, 84, 84], 'Board 2 · connectors and cables');
   ghosts2(s, true);
   // J0: male 1x4 on this board; cable M's female housing above it
-  conn(s, ['L-M1', 'L-M2', 'R-M1', 'R-M2'].map((t, i) => ({ x: cx(11 + i), y: ry('A'), n: i + 1, sig: t, k: 'P', ly: ry('B') + 0.3 })), {});
+  conn(s, ['L-M1', 'L-M2', 'R-M1', 'R-M2'].map((t, i) => ({ x: cx(11 + i), y: ry('A'), n: i + 1, sig: t, k: i % 2 ? 'N' : 'W', ly: ry('B') + 0.3 })), {});
   conn(s, ['L-M1', 'L-M2', 'R-M1', 'R-M2'].map((t, i) => ({ x: cx(11 + i), y: -9.0, n: i + 1 })), { fem: true, title: 'cable M end (from board 0) · FEMALE 1×4', ty: -11.4 });
   plugArrow(s, cx(12.5), -7.4, 1.6); s.text(cx(12.5) - 1.0, -3.0, 'J0 · MALE 1×4', { size: 0.75, fill: '#1b2329', bold: true, anchor: 'end' });
   // JB: male JST-XH on this board; cable B's female JST housing above it
@@ -1142,26 +1161,26 @@ function cablesBoard0(s) {
   conn(s, [{ x: cx(17), y: -9.0, n: 1 }, { x: cx(18), y: -9.0, n: 2 }], { jst: true, title: 'cable B end (from board 1) · FEMALE JST-XH 2-pin', ty: -14.6, ta: 'start', tx: cx(16.4) });
   plugArrow(s, cx(17.5), -7.4, 1.4); s.text(cx(18.6), -3.0, 'JB · MALE JST-XH (keyed)', { size: 0.75, fill: '#1b2329', bold: true, anchor: 'start' });
   // cable C: soldered into the landing holes, female 2x5 at its far end
-  const land = [[1, 'GND', 'K', 18, 'B'], [2, 'PWMA', 'B', 11, 'C'], [3, 'PWMB', 'G', 17, 'C'], [4, 'AIN1', 'B', 13, 'C'], [5, '5V', 'O', 14, 'C'], [6, 'VB', 'V', 10, 'C'], [7, 'BIN1', 'G', 15, 'C'], [8, 'AIN2', 'B', 12, 'C'], [9, 'BIN2', 'G', 16, 'C'], [10, 'GND', 'K', 19, 'B']];
+  const land = [[1, 'GND', 'K', 18, 'B'], [2, 'PWMA', 'P', 11, 'C'], [3, 'PWMB', 'P', 17, 'C'], [4, 'AIN1', 'W', 13, 'C'], [5, '5V', 'O', 14, 'C'], [6, 'VB', 'V', 10, 'C'], [7, 'BIN1', 'W', 15, 'C'], [8, 'AIN2', 'N', 12, 'C'], [9, 'BIN2', 'N', 16, 'C'], [10, 'GND', 'K', 19, 'B']];
   s.rect(cx(10) - 1.3, ry('C') - 1.3, cx(17) - cx(10) + 2.6, 2.6, '#c9d0d5', { op: 0.55, rx: 0.8 }); s.rect(cx(18) - 1.3, ry('B') - 1.3, P + 2.6, 2.6, '#c9d0d5', { op: 0.55, rx: 0.8 });
-  for (const [n, sig, k, c, r] of land) { s.circle(cx(c), ry(r), 0.75, WC[k], { stroke: "#fff", sw: 0.3 }); wl(s, cx(c), ry(r) + (c % 2 ? 1.9 : 3.2), sig + "·" + n, k); }
+  for (const [n, sig, k, c, r] of land) { wdot(s, cx(c), ry(r), 0.75, k); wl(s, cx(c), ry(r) + (c % 2 ? 1.9 : 3.2), sig + "·" + n, k); }
   bundleLine(s, [[cx(10) - 1.3, ry('C')], [24.2, ry('C')], [24.2, -14.5], [20.0, -14.5]]); bundleLine(s, [[cx(19) + 1.3, ry('B')], [53.2, ry('B')], [53.2, -1.2], [24.2, -1.2]]);
   const cC = n => ({ x: 6.0 + 3.0 * Math.floor((n - 1) / 2), y: n % 2 ? -17.0 : -13.0 });
   conn(s, land.map(([n, sig, k, c, r]) => { const p = cC(n); return { x: p.x, y: p.y, n, sig, k, ly: n % 2 ? p.y - 1.7 : p.y + 2.0, sub: r + c, sy: n % 2 ? p.y - 2.9 : p.y + 3.2 }; }),
     { fem: true, pitch: 3.0, title: 'cable C far end · FEMALE 2×5 (glued) · plugs onto JC (MALE) on board 3', ty: -23.6, tx: 13.0 });
   s.text(30, 44.0, 'grey band = where cable C is soldered: each wire over its TB6612 pin (signal · JC pin number under each hole); both GND wires in B18, B19 at the star', { size: 0.88, fill: C.ink });
   s.text(30, 46.0, 'under each housing pin: its landing hole on this board · the cable carries pin n to pin n: the female 2×5 plugs onto JC with pin 1 on the square pad', { size: 0.88, fill: C.ink2 });
-  legendConn(s, -6, 50.0);
+  legendConn(s, -6, 50.0); legendW(s, -6, 52.6, ['R', 'K', 'O', 'P', 'V', 'W', 'N']);
 })();
 
 // ---------- board 3: connectors and cables (own view) ----------
 (function () {
-  const s = wview("w3c", false, [-17, -27, 95, 86], 'Board 3 · connectors, sockets and cables');
+  const s = wview("w3c", false, [-17, -27, 95, 92], 'Board 3 · connectors, sockets and cables');
   ghost(s, cx(13) - 1.4, ry('B') - 4.3, cx(19) - cx(13) + 2.8, ry('M') - ry('B') + 5.6, '', { op: 0.55 }); s.text(cx(16), ry('H'), 'Pro Mini', { size: 1.4, fill: '#3b4a55', bold: true });
   ghost(s, 12.18, 14.6, 20.3, 15.6, '', { op: 0.55 }); s.text(22.3, 20.5, 'GY-521', { size: 1.3, fill: '#3b4a55', bold: true });
   // JC and JE: male headers on this board, the cable ends above them
-  const jc = [[1, 'GND', 'K', 2, 'A'], [2, 'PWMA', 'B', 2, 'B'], [3, 'PWMB', 'G', 3, 'A'], [4, 'AIN1', 'B', 3, 'B'], [5, '5V', 'O', 4, 'A'], [6, 'VB', 'V', 4, 'B'], [7, 'BIN1', 'G', 5, 'A'], [8, 'AIN2', 'B', 5, 'B'], [9, 'BIN2', 'G', 6, 'A'], [10, 'GND', 'K', 6, 'B']];
-  const je = [[1, 'E5V', 'O', 8, 'A'], [2, 'EGND', 'K', 8, 'B'], [3, 'L-C1', 'B', 9, 'A'], [4, 'L-C2', 'B', 9, 'B'], [5, 'R-C1', 'G', 10, 'A'], [6, 'R-C2', 'G', 10, 'B']];
+  const jc = [[1, 'GND', 'K', 2, 'A'], [2, 'PWMA', 'P', 2, 'B'], [3, 'PWMB', 'P', 3, 'A'], [4, 'AIN1', 'W', 3, 'B'], [5, '5V', 'O', 4, 'A'], [6, 'VB', 'V', 4, 'B'], [7, 'BIN1', 'W', 5, 'A'], [8, 'AIN2', 'N', 5, 'B'], [9, 'BIN2', 'N', 6, 'A'], [10, 'GND', 'K', 6, 'B']];
+  const je = [[1, 'E5V', 'O', 8, 'A'], [2, 'EGND', 'K', 8, 'B'], [3, 'L-C1', 'G', 9, 'A'], [4, 'L-C2', 'Y', 9, 'B'], [5, 'R-C1', 'G', 10, 'A'], [6, 'R-C2', 'Y', 10, 'B']];
   const mk = (arr, dy) => arr.map(([n, sig, k, c, r]) => ({ x: cx(c), y: ry(r) + dy, n, sig: dy ? undefined : sig, k, ly: r === 'A' ? -0.7 : ry('B') + 2.1 }));
   conn(s, mk(jc, 0), {}); conn(s, mk(je, 0), {});
   conn(s, mk(jc, -14), { fem: true, title: 'cable C end (from board 2) · FEMALE 2×5', ty: -13.6 }); plugArrow(s, cx(4), -7.0, 1.2);
@@ -1171,14 +1190,14 @@ function cablesBoard0(s) {
   const hx = i => cx(13.5) + i * P, hy = ry('B') - 3.2;
   conn(s, ['GND', 'GND', 'VCC', 'RXI', 'TXO', 'DTR'].map((t, i) => ({ x: hx(i), y: hy, n: i + 1, sig: t, k: t === 'VCC' ? 'R' : 'K', ly: hy + 2.1 })), {});
   conn(s, ['GND', 'CTS', 'VCC', 'TXD', 'RXD', 'DTR'].map((t, i) => ({ x: hx(i), y: -12.0, n: i + 1, sig: t, k: t === 'VCC' ? 'R' : 'K', ly: -14.1 })), { fem: true, title: "USB-serial adapter (FTDI layout) · FEMALE · only 4 jumper wires", ty: -19.4 });
-  for (const [a, h, k] of [[0, 0, 'K'], [3, 3, 'G'], [4, 4, 'B'], [5, 5, 'V']]) wire(s, [[hx(a), -11.3], [hx(h), hy - 0.7]], k, { w: 0.35 });
+  for (const [a, h, k] of [[0, 0, 'K'], [3, 3, 'B'], [4, 4, 'B'], [5, 5, 'B']]) wire(s, [[hx(a), -11.3], [hx(h), hy - 0.7]], k, { w: 0.35 });
   for (const yy of [-12.0, hy]) { s.line([[hx(2) - 0.9, yy - 0.9], [hx(2) + 0.9, yy + 0.9]], '#d0312d', 0.4); s.line([[hx(2) - 0.9, yy + 0.9], [hx(2) + 0.9, yy - 0.9]], '#d0312d', 0.4); }
   s.text(hx(5) + 2.2, -8.6, "TXD → RXI · RXD → TXO", { size: 0.7, fill: "#a5501a", bold: true, anchor: "start" }); s.text(hx(5) + 2.2, -7.4, "DTR → DTR · GND → GND", { size: 0.7, fill: "#a5501a", bold: true, anchor: "start" }); s.text(hx(5) + 2.2, -6.2, "VCC: never connected", { size: 0.7, fill: "#d0312d", bold: true, anchor: "start" });
   // HC-05: female socket on the board, the module's male pins beside it
   const h5 = ['STATE', 'RXD', 'TXD', 'GND', 'VCC', 'EN'];
   conn(s, h5.map((t, i) => ({ x: cx(1), y: ry(3 + i), n: i + 1 })), { sock: true });
   conn(s, h5.map((t, i) => ({ x: -6.0, y: ry(3 + i), n: i + 1 })), {});
-  for (let i = 0; i < 6; i++) wl(s, -7.6, ry(3 + i) + 0.25, h5[i], ['RXD', 'TXD'].includes(h5[i]) ? 'G' : h5[i] === 'VCC' ? 'O' : h5[i] === 'GND' ? 'K' : 'V', 'end');
+  for (let i = 0; i < 6; i++) wl(s, -7.6, ry(3 + i) + 0.25, h5[i], ['RXD', 'TXD'].includes(h5[i]) ? 'B' : h5[i] === 'VCC' ? 'O' : h5[i] === 'GND' ? 'K' : 'X', 'end');
   s.line([[-4.6, ry("F") + 1.27], [4.2, ry("F") + 1.27]], "#a5501a", 0.3, { dash: "0.6 0.4" }); s.line([[3.4, ry("F") + 0.6], [4.2, ry("F") + 1.27], [3.4, ry("F") + 1.94]], "#a5501a", 0.3); s.text(0, ry("F") + 0.6, "plugs in", { size: 0.6, fill: "#a5501a", bold: true });
   s.text(-8.0, ry("D") - 2.6, "HC-05 module · MALE pins", { size: 0.7, fill: "#1b2329", bold: true }); s.text(cx(1), ry('I') + 2.3, 'FEMALE 1×6 socket, column 1', { size: 0.7, fill: '#a5501a', bold: true });
   // HC-SR04: right-angle female socket on the board, the sensor's male pins in front of it
@@ -1188,22 +1207,25 @@ function cablesBoard0(s) {
   plugArrow(s, cx(10.5), 42.6, 38.2);
   s.text(cx(13.0), 41.8, 'right-angle FEMALE 1×4 socket (N9–N12) ← HC-SR04 MALE pins plug in from the front', { size: 0.7, fill: '#a5501a', bold: true, anchor: 'start' });
   // GY-521 and Pro Mini side rows: male pins soldered straight in, no socket
-  conn(s, ['VCC', 'GND', 'SCL', 'SDA', 'XDA', 'XCL', 'AD0', 'INT'].map((t, i) => ({ x: cx(4 + i), y: ry('K'), n: i + 1, sig: t, k: i < 2 ? (i ? 'K' : 'O') : i < 4 ? 'B' : 'V', ly: ry('K') - 1.6 })), {});
+  conn(s, ['VCC', 'GND', 'SCL', 'SDA', 'XDA', 'XCL', 'AD0', 'INT'].map((t, i) => ({ x: cx(4 + i), y: ry('K'), n: i + 1, sig: t, k: i < 2 ? (i ? 'K' : 'O') : i < 4 ? 'B' : 'X', ly: ry('K') - 1.6 })), {});
   s.text(cx(7.5), ry('L') + 0.6, 'GY-521 · its MALE 1×8 header soldered straight into row K (no socket)', { size: 0.7, fill: '#1b2329', bold: true });
   s.text(cx(16), ry('M') + 2.2, 'Pro Mini · MALE header pins soldered into columns 13 and 19', { size: 0.66, fill: '#1b2329', bold: true });
   s.text(36, 52.2, 'every cable carries pin n to pin n · pin 1: square pad on the board, paint dot on the housing · plug and unplug only with the switch off', { size: 0.9, fill: C.ink2 });
-  legendConn(s, -14, 55.5);
+  legendConn(s, -14, 55.5); legendW(s, -14, 58.0, ['R', 'O', 'K', 'P', 'V', 'W', 'N', 'G', 'Y', 'B'], 90);
 })();
 
 // ---------- circuit diagram: every supply and ground wire drawn (same layout as the Nucleo page) ----------
 (function () {
-  const VW = 228, VH = 161;
+  const VW = 228, VH = 166;
   const s = svg('dc', [0, 0, VW, VH]);
   s.rect(0, 0, VW, VH, '#ffffff', { rx: 0 });
   const W = (col, w, o) => pts => s.line(pts, col, w, o);
   const R = W(C.wireR, 0.5), O = W(C.wireO, 0.5), B = W(C.wireB, 0.4), G = W(C.wireG, 0.4), P = W(C.wireP, 0.4), K = W(C.wireK, 0.45);
   const dash = { dash: '1 0.6' };                       // reserved HC-05: socket wired, module not fitted
-  const DG = W(C.wireG, 0.4, dash), DO = W(C.wireO, 0.5, dash), DK = W(C.wireK, 0.45, dash);
+  const DG = W(C.wireG, 0.4, dash), DO = W(C.wireO, 0.5, dash), DK = W(C.wireK, 0.45, dash), DB = W(C.wireB, 0.4, dash);
+  // white and yellow get a dark casing so they read on white paper
+  const WC2 = (col, w) => pts => { s.line(pts, '#3a3a3a', w + 0.26); s.line(pts, col, w); };
+  const M1 = WC2(C.wireW, 0.4), M2 = W(C.wireN, 0.45), E1 = W(C.wireG, 0.4), E2 = WC2(C.wireY, 0.4);
   const dot = (x, y) => s.circle(x, y, 0.65, C.ink);
   // vertical capacitor between y1 (top net) and y2 (bottom net) at x; plates in the middle
   // pol: 'l' or 'r' marks an electrolytic, + on the top plate (the supply side), drawn on that side
@@ -1276,9 +1298,9 @@ function cablesBoard0(s) {
   note(nx + 2, 50.2, 'RX, DTR only, never its VCC', { fill: '#c2410c', bold: true });
   // new: battery sense, BAT+ (after the switch) -> 100k -> A6; A6 -> 33k and 0.1 uF -> GND (battery / 4)
   lab(nx + 1.1, 31, 'A6 · battery', 'start');
-  W(C.ink2, 0.4)([[34, 31], [46, 31]]); dot(34, 31); s.rect(46, 30.3, 6, 1.4, '#f3ead6', { stroke: '#7a6a45', sw: 0.3, rx: 0.3 }); s.text(49, 29.5, '100k', { size: 1.1, bold: true });
-  W(C.ink2, 0.4)([[52, 31], [nx, 31]]); s.rect(55.5, 30.3, 4, 1.4, '#f3ead6', { stroke: '#7a6a45', sw: 0.3, rx: 0.3 }); s.text(57.5, 29.5, '1k', { size: 1.1, bold: true }); s.text(64.5, 29.6, 'sense → A6', { size: 1.1, fill: C.ink2 });
-  dot(69, 31); W(C.ink2, 0.4)([[69, 31], [69, 32.5]]); s.rect(68.3, 32.5, 1.4, 5, '#f3ead6', { stroke: '#7a6a45', sw: 0.3, rx: 0.3 });
+  W(C.wireV, 0.4)([[34, 31], [46, 31]]); dot(34, 31); s.rect(46, 30.3, 6, 1.4, '#f3ead6', { stroke: '#7a6a45', sw: 0.3, rx: 0.3 }); s.text(49, 29.5, '100k', { size: 1.1, bold: true });
+  W(C.wireV, 0.4)([[52, 31], [nx, 31]]); s.rect(55.5, 30.3, 4, 1.4, '#f3ead6', { stroke: '#7a6a45', sw: 0.3, rx: 0.3 }); s.text(57.5, 29.5, '1k', { size: 1.1, bold: true }); s.text(64.5, 29.6, 'sense → A6', { size: 1.1, fill: C.ink2 });
+  dot(69, 31); W(C.wireV, 0.4)([[69, 31], [69, 32.5]]); s.rect(68.3, 32.5, 1.4, 5, '#f3ead6', { stroke: '#7a6a45', sw: 0.3, rx: 0.3 });
   s.text(67.6, 35.6, '33k', { size: 1.1, bold: true, anchor: 'end' }); K([[69, 37.5], [69, YG]]); dot(69, YG);
   cap(74, 31, 37, ''); K([[74, 37], [74, YG]]); dot(74, YG); s.text(75.6, 34.45, '0.1µ', { size: 0.95, bold: true, anchor: 'start' });
   K([NB.GND, [87, YG]]); dot(87, YG);
@@ -1291,8 +1313,8 @@ function cablesBoard0(s) {
   const tbR = { AO1: 26, AO2: 29.6, BO1: 36.8, BO2: 40.4, VM: 47.6, GND: 51.2, VCC: 54.8, STBY: 58.4 };
   for (const [k, v] of Object.entries(tbR)) lab(tx + tw - 1.1, v, k, 'end');
   const route = (from, to, lane, f) => f([from, [lane, from[1]], [lane, to[1]], to]);
-  route(NR.D6, TB.PWMA, 158, B); route(NR.D7, TB.AIN1, 156, B); route(NR.D8, TB.AIN2, 154, B);
-  route(NR.D5, TB.PWMB, 152, G); route(NR.D4, TB.BIN1, 150, G); route(NR.D12, TB.BIN2, 148, G);
+  route(NR.D6, TB.PWMA, 158, P); route(NR.D7, TB.AIN1, 156, M1); route(NR.D8, TB.AIN2, 154, M2);
+  route(NR.D5, TB.PWMB, 152, P); route(NR.D4, TB.BIN1, 150, M1); route(NR.D12, TB.BIN2, 148, M2);
   // 6 V into VM, 100 uF + 0.1 uF from VM to GND right at the module
   R([[222, 47.6], [xr, 47.6]]);
   cap(192, 47.6, 51.2, '100µ', 'l'); cap(201, 47.6, 51.2, '0.1µ');
@@ -1307,8 +1329,8 @@ function cablesBoard0(s) {
   // ---- motors (motor board, through J0) ----
   box(196, 18, 20, 13, '#dfe7d3', 'LEFT motor'); lab(197.1, 26, 'M1', 'start'); lab(197.1, 29.6, 'M2', 'start');
   box(196, 33, 20, 13, '#dfe7d3', 'RIGHT motor'); lab(197.1, 41, 'M1', 'start'); lab(197.1, 44.6, 'M2', 'start');
-  P([[xr, 26], [196, 26]]); P([[xr, 29.6], [196, 29.6]]);
-  P([[xr, 36.8], [192, 36.8], [192, 41], [196, 41]]); P([[xr, 40.4], [190, 40.4], [190, 44.6], [196, 44.6]]);
+  M1([[xr, 26], [196, 26]]); M2([[xr, 29.6], [196, 29.6]]);
+  M1([[xr, 36.8], [192, 36.8], [192, 41], [196, 41]]); M2([[xr, 40.4], [190, 40.4], [190, 44.6], [196, 44.6]]);
   // 0.1 uF ceramic across each motor's terminals
   cap(194.3, 26, 29.6, ''); cap(194.3, 41, 44.6, '');
   s.text(192.7, 28.2, '0.1µ', { size: 0.85, bold: true, anchor: 'end' }); s.text(192.7, 43.2, '0.1µ', { size: 0.85, bold: true, anchor: 'end' });
@@ -1317,10 +1339,10 @@ function cablesBoard0(s) {
   box(162, 70, 22, 16, '#d6eadf', 'RIGHT encoder', 10.5); box(190, 70, 22, 16, '#d6eadf', 'LEFT encoder', 10.5);
   for (const [x, t] of [[168, 'C2'], [174, 'C1'], [196, 'C2'], [202, 'C1']]) { labT(x, 70, t); s.circle(x, 70, 0.45, C.ink); }
   for (const [x, t] of [[166, 'VCC'], [180, 'GND'], [194, 'VCC'], [208, 'GND']]) { labB(x, 86, t); s.circle(x, 86, 0.45, C.ink); }
-  B([NR.D2, [146, 43.6], [146, 64], [202, 64], [202, 70]]);
-  B([NR.A0, [144, 47.2], [144, 65.6], [196, 65.6], [196, 70]]);
-  G([NR.D3, [142, 50.8], [142, 67.2], [174, 67.2], [174, 70]]);
-  G([NR.A1, [140, 54.4], [140, 68.8], [168, 68.8], [168, 70]]);
+  E1([NR.D2, [146, 43.6], [146, 64], [202, 64], [202, 70]]);
+  E2([NR.A0, [144, 47.2], [144, 65.6], [196, 65.6], [196, 70]]);
+  E1([NR.D3, [142, 50.8], [142, 67.2], [174, 67.2], [174, 70]]);
+  E2([NR.A1, [140, 54.4], [140, 68.8], [168, 68.8], [168, 70]]);
   O([[166, 86], [166, Y5]]); dot(166, Y5); O([[194, 86], [194, Y5]]); dot(194, Y5);
   K([[180, 86], [180, YG]]); dot(180, YG); K([[208, 86], [208, YG]]); dot(208, YG);
 
@@ -1332,9 +1354,9 @@ function cablesBoard0(s) {
   for (const [x, t] of [[92, 'VCC'], [102, 'GND'], [107, 'VCC'], [116, 'GND'], [123, 'VCC'], [132, 'GND']]) { labB(x, 114, t); s.circle(x, 114, 0.45, C.ink); }
   B([NB.A4, [95, 96]]); B([NB.A5, [99, 96]]); B([NB.D9, [108, 96]]); B([NB.D10, [112, 96]]);
   // HC-05: TXD straight to D0; D1 (5 V) -> 1k -> RXD, RXD -> 2k -> GND, about 3.3 V at RXD
-  DG([NB.D0, [124, 96]]);
-  DG([NB.D1, [128, 82]]); resV(128, 82, 5, '1k'); DG([[128, 87], [128, 96]]);
-  dot(128, 90.5); DG([[128, 90.5], [137, 90.5], [137, 91.5]]); resV(137, 91.5, 5, '2k'); DK([[137, 96.5], [137, YG]]); dot(137, YG);
+  DB([NB.D0, [124, 96]]);
+  DB([NB.D1, [128, 82]]); resV(128, 82, 5, '1k'); DB([[128, 87], [128, 96]]);
+  dot(128, 90.5); DB([[128, 90.5], [137, 90.5], [137, 91.5]]); resV(137, 91.5, 5, '2k'); DK([[137, 96.5], [137, YG]]); dot(137, YG);
   note(141, 100, 'HC-05 divider on board 3:'); note(141, 102.2, 'D1 → 1k → RXD → 2k → GND'); note(141, 104.4, '(5 V → about 3.3 V at RXD)');
   // sensor supplies
   O([[92, 114], [92, Y5]]); dot(92, Y5); O([[107, 114], [107, Y5]]); dot(107, Y5); DO([[123, 114], [123, Y5]]); dot(123, Y5);
@@ -1348,11 +1370,15 @@ function cablesBoard0(s) {
   s.text(12.5, YG + 0.5, 'GND', { size: 1.4, anchor: 'end', bold: true });
   s.text(116, YG + 4.6, 'One common ground. Wire it as a star: each part gets its own GND wire back to where battery − arrives on board 2 (power board).', { size: 1.35, fill: C.ink2 });
   // legend
-  const leg = [[C.wireR, '6.0 V and battery +'], [C.wireO, '5.0 V logic'], [C.wireK, 'GND'], [C.wireB, 'left side / sensor signals'], [C.wireG, 'right side / UART'], [C.wireP, 'motor wires']];
-  leg.forEach(([c, t], i) => { const x = 3 + i * 31.5, y = 154; s.line([[x, y], [x + 5, y]], c, 0.6); s.text(x + 6.5, y + 0.5, t, { size: 1.3, anchor: 'start' }); });
-  s.line([[192, 154], [197, 154]], C.ink2, 0.6, dash); s.text(198.5, 154.5, 'reserved (HC-05)', { size: 1.3, anchor: 'start' });
-  s.text(3, 158.4, 'A dot is a connection; wires that cross without a dot are not connected.', { size: 1.3, fill: C.ink2, anchor: 'start' });
-  s.text(96, 158.4, 'Red + = electrolytic, + leg to the supply: 100µ 16 V low-ESR, 10µ 16 V · no + = ceramic, no polarity: 0.1µ X7R 50 V · fuse T3A slow-blow 5×20 mm', { size: 1.3, fill: C.ink2, anchor: 'start' });
+  // robot color code: the same meaning on every wire you add, on every board
+  const leg = [[C.wireR, 'red: battery + / 6.0 V'], [C.wireO, 'orange: 5.0 V'], [C.wireK, 'black: GND'], [C.wireP, 'purple: PWM (PWMA, PWMB)'], [C.wireV, 'grey: battery sense'],
+    [C.wireW, 'white: M1 and IN1'], [C.wireN, 'brown: M2 and IN2'], [C.wireG, 'green: encoder C1'], [C.wireY, 'yellow: encoder C2'], [C.wireB, 'blue: sensors / serial']];
+  s.text(3, 150.6, 'Wire color code (every wire you add):', { size: 1.3, anchor: 'start', bold: true });
+  leg.forEach(([c, t], i) => { const x = 3 + (i % 5) * 38, y = 153.4 + Math.floor(i / 5) * 2.8; if (c === C.wireW || c === C.wireY) s.line([[x, y], [x + 5, y]], '#3a3a3a', 0.86); s.line([[x, y], [x + 5, y]], c, 0.6); s.text(x + 6.5, y + 0.5, t, { size: 1.3, anchor: 'start' }); });
+  s.line([[193, 153.4], [198, 153.4]], C.ink2, 0.6, dash); s.text(199.5, 153.9, 'reserved (HC-05)', { size: 1.3, anchor: 'start' });
+  s.text(3, 159.2, 'Motor cables (factory, maker\'s colors, kept as they are): white M1 · blue GND · green C1 · yellow C2 · black VCC 5 V · red M2. Only on this cable do blue and black mean GND and 5 V.', { size: 1.3, fill: '#c2410c', anchor: 'start', bold: true });
+  s.text(3, 162.6, 'A dot is a connection; wires that cross without a dot are not connected.', { size: 1.3, fill: C.ink2, anchor: 'start' });
+  s.text(96, 162.6, 'Red + = electrolytic, + leg to the supply: 100µ 16 V low-ESR, 10µ 16 V · no + = ceramic, no polarity: 0.1µ X7R 50 V · fuse T3A slow-blow 5×20 mm', { size: 1.3, fill: C.ink2, anchor: 'start' });
 })();
 
 // ---------- connector diagram: every mating pair, male pins vs female housings/sockets, pin numbers and signals ----------
@@ -1455,24 +1481,25 @@ function cablesBoard0(s) {
     ['power', '5 V on board 3', 'Pro Mini VCC (not RAW), GY-521, HC-SR04 socket (0.1 µF), HC-05 socket, both encoder VCC', 'board 3, JE-1', '#e07b00'],
     ['power', 'GND', 'star point on board 2: both MP1584, TB6612 GND, the two GND wires of cable C, each its own wire; board 3 ground point at the Pro Mini GND', 'JB-2, JC-1/10, JE-2', '#222'],
     ['power', 'Battery sense (new)', 'switched BAT+ → 100 kΩ (board 2) → cable C → 1 kΩ → A6; A6 → 33 kΩ and 0.1 µF → GND on board 3. 6.4–8.4 V reads 1.6–2.1 V', 'JC-6', '#7b8790'],
-    ['left motor', 'Pro Mini D6 (PWM)', 'TB6612 PWMA', 'JC-2', '#1f5fd1'],
-    ['left motor', 'Pro Mini D7', 'TB6612 AIN1', 'JC-4', '#1f5fd1'],
-    ['left motor', 'Pro Mini D8', 'TB6612 AIN2', 'JC-8', '#1f5fd1'],
-    ['left motor', 'TB6612 AO1, AO2', 'left motor M1, M2; 0.1 µF across M1/M2 on board 0 (C14–C15)', 'J0-1, J0-2', '#8a4fd1'],
-    ['right motor', 'Pro Mini D5 (PWM)', 'TB6612 PWMB', 'JC-3', '#2e9e44'],
-    ['right motor', 'Pro Mini D4', 'TB6612 BIN1', 'JC-7', '#2e9e44'],
-    ['right motor', 'Pro Mini D12', 'TB6612 BIN2', 'JC-9', '#2e9e44'],
-    ['right motor', 'TB6612 BO1, BO2', 'right motor M1, M2; 0.1 µF across M1/M2 on board 0 (C18–C19)', 'J0-3, J0-4', '#8a4fd1'],
-    ['encoders', 'Left encoder C1 / C2', 'Pro Mini D2 (INT0) / A0', 'JE-3 / JE-4', '#1f5fd1'],
-    ['encoders', 'Right encoder C1 / C2', 'Pro Mini D3 (INT1) / A1', 'JE-5 / JE-6', '#2e9e44'],
+    ['left motor', 'Pro Mini D6 (PWM)', 'TB6612 PWMA', 'JC-2', '#8a4fd1'],
+    ['left motor', 'Pro Mini D7', 'TB6612 AIN1', 'JC-4', '#ffffff'],
+    ['left motor', 'Pro Mini D8', 'TB6612 AIN2', 'JC-8', '#8b5a2b'],
+    ['left motor', 'TB6612 AO1, AO2', 'left motor M1, M2; 0.1 µF across M1/M2 on board 0 (C14–C15)', 'J0-1, J0-2', 'linear-gradient(90deg,#ffffff 50%,#8b5a2b 50%)'],
+    ['right motor', 'Pro Mini D5 (PWM)', 'TB6612 PWMB', 'JC-3', '#8a4fd1'],
+    ['right motor', 'Pro Mini D4', 'TB6612 BIN1', 'JC-7', '#ffffff'],
+    ['right motor', 'Pro Mini D12', 'TB6612 BIN2', 'JC-9', '#8b5a2b'],
+    ['right motor', 'TB6612 BO1, BO2', 'right motor M1, M2; 0.1 µF across M1/M2 on board 0 (C18–C19)', 'J0-3, J0-4', 'linear-gradient(90deg,#ffffff 50%,#8b5a2b 50%)'],
+    ['motor cable', 'Motor 6-wire cable (factory, ZH1.5 plug)', 'maker\'s colors, kept as they are: white M1 · blue GND · green C1 · yellow C2 · black VCC (5 V) · red M2. Soldered into board 0; from there on every wire follows the robot color code', 'board 0', 'linear-gradient(90deg,#ffffff 33%,#1f5fd1 33% 66%,#222 66%)'],
+    ['encoders', 'Left encoder C1 / C2', 'Pro Mini D2 (INT0) / A0', 'JE-3 / JE-4', 'linear-gradient(90deg,#2e9e44 50%,#f2c500 50%)'],
+    ['encoders', 'Right encoder C1 / C2', 'Pro Mini D3 (INT1) / A1', 'JE-5 / JE-6', 'linear-gradient(90deg,#2e9e44 50%,#f2c500 50%)'],
     ['sensor', 'MPU6050 SDA / SCL', 'Pro Mini A4 / A5 (inner pads)', 'board 3', '#1f5fd1'],
-    ['sensor', 'MPU6050 INT', 'not connected (D2 is the left encoder)', '', '#7b8790'],
+    ['sensor', 'MPU6050 INT', 'not connected (D2 is the left encoder)', '', 'transparent'],
     ['ultrasonic', 'HC-SR04 TRIG / ECHO', 'Pro Mini D9 / D10', 'board 3 (right-angle socket)', '#1f5fd1'],
-    ['bluetooth (reserved)', 'HC-05 TXD', 'Pro Mini D0 (RXI), direct', 'board 3 (socket)', '#2e9e44'],
-    ['bluetooth (reserved)', 'Pro Mini D1 (TXO)', '1 kΩ → HC-05 RXD, RXD → 2 kΩ → GND (divider on board 3)', 'board 3 (socket)', '#2e9e44'],
-    ['programming', 'USB-serial adapter GND, TX, RX, DTR', 'Pro Mini 6-pin header at the back edge of board 3 (keep-clear zone); never its VCC wire', 'board 3', '#7b8790'],
+    ['bluetooth (reserved)', 'HC-05 TXD', 'Pro Mini D0 (RXI), direct', 'board 3 (socket)', '#1f5fd1'],
+    ['bluetooth (reserved)', 'Pro Mini D1 (TXO)', '1 kΩ → HC-05 RXD, RXD → 2 kΩ → GND (divider on board 3)', 'board 3 (socket)', '#1f5fd1'],
+    ['programming', 'USB-serial adapter GND, TX, RX, DTR', 'Pro Mini 6-pin header at the back edge of board 3 (keep-clear zone); never its VCC wire', 'board 3', '#1f5fd1'],
   ];
   document.getElementById('wires').innerHTML = '<tr><th>Group</th><th>From</th><th>To</th><th>Through</th></tr>' +
-    rows.map(r => `<tr><td>${r[0]}</td><td class="mono"><span class="sw" style="background:${r[4]}"></span>${r[1]}</td><td class="mono wrap">${r[2]}</td><td class="mono">${r[3]}</td></tr>`).join('');
+    rows.map(r => `<tr><td>${r[0]}</td><td class="mono"><span class="sw" style="box-shadow:inset 0 0 0 1px #8a8f94;background:${r[4]}"></span>${r[1]}</td><td class="mono wrap">${r[2]}</td><td class="mono">${r[3]}</td></tr>`).join('');
 })();
 </script>
